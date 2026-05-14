@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  balance-wheel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: balance_wheel_bot
+    
+    environment:
+      # Set to false for production
+      - DRY_RUN=true
+      - PYTHONUNBUFFERED=1
+      - TZ=Asia/Kolkata
+      
+      # Angel One Credentials (use .env file in production)
+      - ANGEL_API_KEY=${ANGEL_API_KEY:-YOUR_API_KEY}
+      - ANGEL_CLIENT_CODE=${ANGEL_CLIENT_CODE:-YOUR_CODE}
+      - ANGEL_PASSWORD=${ANGEL_PASSWORD:-YOUR_PASSWORD}
+      - ANGEL_TOTP=${ANGEL_TOTP:-000000}
+    
+    volumes:
+      # Mount logs directory for persistence
+      - ./logs:/app/BalanceWheel/logs
+      
+      # Mount data directory for database persistence
+      - ./data:/app/BalanceWheel/data
+      
+      # Mount config for easy updates
+      - ./config.json:/app/BalanceWheel/config.json
+    
+    restart: on-failure
+    restart_policy:
+      condition: on-failure
+      delay: 30s
+      max_attempts: 3
+      window: 60s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+# Optional: Add monitoring service
+  # monitor:
+  #   image: prom/prometheus
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #   ports:
+  #     - "9090:9090"
+
+volumes:
+  logs:
+  data:

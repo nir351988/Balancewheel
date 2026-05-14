@@ -1,0 +1,126 @@
+{
+  "app_name": "BalanceWheel",
+  "version": "1.0.0",
+  "dry_run": true,
+  "broker": {
+    "platform": "Angel One",
+    "api_key": "YOUR_API_KEY_HERE",
+    "client_code": "YOUR_CLIENT_CODE_HERE",
+    "password": "YOUR_PASSWORD_HERE",
+    "totp": "000000"
+  },
+  "trading_rules": {
+    "price_dip_threshold_percent": 15,
+    "target_average_buffer_percent": 5,
+    "high_alert_lower_threshold_percent": 12,
+    "high_alert_upper_threshold_percent": 15,
+    "minimum_balance_required_inr": 2000,
+    "cooldown_days": 7,
+    "max_sector_buys_per_day": 1,
+    "market_sentiment_nifty_down_percent": 3,
+    "safety_buffer_subtract_shares": 1
+  },
+  "logging": {
+    "log_file": "logs/balance_wheel.log",
+    "backup_count": 10,
+    "max_bytes": 5242880,
+    "level": "INFO"
+  },
+  "target_stocks": [
+    {
+      "symbol": "ITC",
+      "exchange": "NSE",
+      "sector": "FMCG",
+      "category": "Dividend",
+      "priority": 1
+    },
+    {
+      "symbol": "TCS",
+      "exchange": "NSE",
+      "sector": "IT",
+      "category": "Dividend",
+      "priority": 1
+    },
+    {
+      "symbol": "HCLTECH",
+      "exchange": "NSE",
+      "sector": "IT",
+      "category": "Dividend",
+      "priority": 2
+    },
+    {
+      "symbol": "POWERGRID",
+      "exchange": "NSE",
+      "sector": "Utilities",
+      "category": "Dividend",
+      "priority": 2
+    },
+    {
+      "symbol": "COALINDIA",
+      "exchange": "NSE",
+      "sector": "Mining",
+      "category": "Dividend",
+      "priority": 2
+    },
+    {
+      "symbol": "RECLTD",
+      "exchange": "NSE",
+      "sector": "Finance",
+      "category": "Dividend",
+      "priority": 1
+    },
+    {
+      "symbol": "PFC",
+      "exchange": "NSE",
+      "sector": "Finance",
+      "category": "Dividend",
+      "priority": 1
+    },
+    {
+      "symbol": "ASIANPAINT",
+      "exchange": "NSE",
+      "sector": "Paints",
+      "category": "Sector Leader",
+      "priority": 1
+    },
+    {
+      "symbol": "LT",
+      "exchange": "NSE",
+      "sector": "Infrastructure",
+      "category": "Sector Leader",
+      "priority": 1
+    },
+    {
+      "symbol": "HDFCBANK",
+      "exchange": "NSE",
+      "sector": "Banking",
+      "category": "Sector Leader",
+      "priority": 1
+    },
+    {
+      "symbol": "TITAN",
+      "exchange": "NSE",
+      "sector": "Consumer",
+      "category": "Sector Leader",
+      "priority": 2
+    },
+    {
+      "symbol": "BAJAJ-AUTO",
+      "exchange": "NSE",
+      "sector": "Auto",
+      "category": "Dividend/Leader",
+      "priority": 1
+    },
+    {
+      "symbol": "RELIANCE",
+      "exchange": "NSE",
+      "sector": "Energy",
+      "category": "Sector Leader",
+      "priority": 1
+    }
+  ],
+  "database": {
+    "type": "sqlite",
+    "file": "data/balance_wheel.db"
+  }
+}
