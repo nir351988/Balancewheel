@@ -815,7 +815,10 @@ class BalanceWheelEngine:
                 "pricetype": "LIMIT",
                 "producttype": "MIS"  # Margin Intraday Short
             }
+            
+            self.logger.debug(f"Placing order with params: {order_params}")
             order_response = self.auth_manager.get_smartapi_instance().placeOrder(order_params)
+            self.logger.debug(f"Order response type: {type(order_response)}, value: {order_response}")
             
             if order_response and isinstance(order_response, str):
                 # Successful order - response is order ID string
