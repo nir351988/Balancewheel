@@ -10,6 +10,8 @@ import logging
 import logging.handlers
 import math
 import os
+import subprocess
+import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
@@ -59,8 +61,21 @@ def setup_logger(config: Dict) -> logging.Logger:
     stream_handler = logging.StreamHandler()
     stream_handler.setLevel(logging.INFO)
     
-    # Formatter
-    formatter = logging.Formatter(
+    # Formatter with timezone
+    class TimezoneFormatter(logging.Formatter):
+        def formatTime(self, record, datefmt=None):
+            ct = self.converter(record.created)
+            if datefmt:
+                s = time.strftime(datefmt, ct)
+                # Add timezone info
+                import datetime
+                dt = datetime.datetime.fromtimestamp(record.created)
+                s += f" {dt.astimezone().tzname()}"
+                return s
+            else:
+                return super().formatTime(record, datefmt)
+    
+    formatter = TimezoneFormatter(
         "%(asctime)s - %(name)s - %(levelname)s - [%(funcName)s:%(lineno)d] - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
@@ -1008,14 +1023,54 @@ class BalanceWheelBot:
         except Exception as e:
             self.logger.error(f"Trading cycle failed: {str(e)}", exc_info=True)
     
+    def _push_logs_to_github(self) -> None:
+        """Push logs to GitHub repository for centralized analysis."""
+        try:
+            import subprocess
+            import os
+            
+            # Get GitHub token from env
+            github_token = os.getenv("GITHUB_TOKEN")
+            if not github_token:
+                self.logger.warning("GITHUB_TOKEN not found in environment. Skipping log push to GitHub.")
+                return
+            
+            repo_url = os.getenv("GITHUB_REPO", "https://github.com/nir351988/Balancewheel.git")
+            
+            # Configure git with token
+            auth_repo_url = repo_url.replace("https://", f"https://nir351988:{github_token}@")
+            
+            # Commands to push logs
+            commands = [
+                ["git", "add", "logs/", "-f"],  # Force add logs
+                ["git", "commit", "-m", f"Logs update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {os.uname().sysname if hasattr(os, 'uname') else 'Unknown'}"],  # Commit with timestamp and system info
+                ["git", "push", auth_repo_url, "master"]  # Push to master
+            ]
+            
+            for cmd in commands:
+                try:
+                    result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.project_root)
+                    if result.returncode != 0:
+                        self.logger.warning(f"Git command failed: {' '.join(cmd)} - {result.stderr.strip()}")
+                    else:
+                        self.logger.info(f"Git command successful: {' '.join(cmd)}")
+                except Exception as e:
+                    self.logger.error(f"Error running git command {' '.join(cmd)}: {str(e)}")
+                    
+        except Exception as e:
+            self.logger.error(f"Failed to push logs to GitHub: {str(e)}")
+    
     def shutdown(self, reason: str = "Normal exit") -> None:
         """Graceful shutdown."""
         try:
             self.logger.info("=" * 80)
             self.logger.info(f"BalanceWheel Bot shutting down: {reason}")
             self.logger.info("=" * 80)
+            
+            # Push logs to GitHub
+            self._push_logs_to_github()
         except Exception as e:
-            print(f"Error during shutdown logging: {str(e)}")
+            print(f"Error during shutdown: {str(e)}")
 
 
 # ==================== MAIN ENTRY POINT ====================

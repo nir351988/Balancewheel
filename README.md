@@ -16,8 +16,9 @@
 6. [Usage](#usage)
 7. [Safety & Risk Management](#safety--risk-management)
 8. [Log Interpretation](#log-interpretation)
-9. [Troubleshooting](#troubleshooting)
-10. [Architecture](#architecture)
+9. [Centralized Logging & Analysis](#centralized-logging--analysis)
+10. [Troubleshooting](#troubleshooting)
+11. [Architecture](#architecture)
 
 ---
 
@@ -34,6 +35,7 @@
 ✅ **Market Sentiment Lock** – Pauses all buying if Nifty 50 drops >3%  
 ✅ **DRY-RUN Mode** – Test strategies before live execution  
 ✅ **Persistent Logging** – 10-day rotating logs with SQLite database  
+✅ **Centralized Log Analysis** – Automatic GitHub log pushing for multi-environment tracking  
 ✅ **DevSecOps Ready** – Error handling, graceful shutdown, secure credential management  
 ✅ **Buy-Only Strategy** – No selling or position liquidation; focuses on accumulation during dips  
 
@@ -398,6 +400,47 @@ Output:
 | TCS    | 3400.5 | 4050.0              | 16.1           | BUY          | Price dip 16.1% >= 15%  |
 | HCLTECH| 1200.0 | 1350.0              | 11.1           | STATUS_CHECK | Normal monitoring       |
 ```
+
+---
+
+## Centralized Logging & Analysis
+
+BalanceWheel automatically pushes all execution logs to GitHub after each run, enabling comprehensive analysis across all deployment environments.
+
+### Automatic Log Pushing
+
+- **Trigger**: After every app execution (local or cloud)
+- **Destination**: `logs/` folder in GitHub repository
+- **Authentication**: Uses `GITHUB_TOKEN` from environment
+- **Timezone**: Captures local system timezone in all timestamps
+
+### Log Structure with Timezone
+
+```
+2026-05-14 10:25:53 IST - BalanceWheel - INFO - [startup:923] - Authentication successful
+2026-05-14 10:26:12 EDT - BalanceWheel - INFO - [run_cycle:986] - [BUY] HCLTECH: Price dip 25.49%
+```
+
+### Analysis Benefits
+
+- **Multi-Environment Tracking**: Compare performance across local dev, PythonAnywhere, etc.
+- **Historical Performance**: Track buy signals, success rates, and market conditions
+- **Debugging**: Centralized log access for troubleshooting deployment issues
+- **Statistics**: Extract metrics for strategy optimization
+
+### Accessing Logs on GitHub
+
+1. Visit: https://github.com/nir351988/Balancewheel/tree/master/logs
+2. Download latest `balance_wheel.log` for analysis
+3. Use GitHub search for specific events or time periods
+
+### Detailed Documentation
+
+See [LOGGING.md](LOGGING.md) for complete log management guide, including:
+- Log format specifications
+- Analysis tools and techniques
+- Multi-environment deployment considerations
+- Troubleshooting log push issues
 
 ---
 
