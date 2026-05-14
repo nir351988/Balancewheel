@@ -1035,27 +1035,40 @@ class BalanceWheelBot:
                 self.logger.warning("GITHUB_TOKEN not found in environment. Skipping log push to GitHub.")
                 return
             
-            repo_url = os.getenv("GITHUB_REPO", "https://github.com/nir351988/Balancewheel.git")
+            # Get project root (current working directory)
+            project_root = os.getcwd()
             
-            # Configure git with token
-            auth_repo_url = repo_url.replace("https://", f"https://nir351988:{github_token}@")
+            # Set up environment for git with credentials
+            env = os.environ.copy()
+            env['GIT_AUTHOR_NAME'] = 'BalanceWheel Bot'
+            env['GIT_AUTHOR_EMAIL'] = 'bot@balancewheel.local'
+            env['GIT_COMMITTER_NAME'] = 'BalanceWheel Bot'
+            env['GIT_COMMITTER_EMAIL'] = 'bot@balancewheel.local'
             
             # Commands to push logs
             commands = [
+                ["git", "config", "--local", "user.name", "BalanceWheel Bot"],
+                ["git", "config", "--local", "user.email", "bot@balancewheel.local"],
                 ["git", "add", "logs/", "-f"],  # Force add logs
-                ["git", "commit", "-m", f"Logs update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {os.uname().sysname if hasattr(os, 'uname') else 'Unknown'}"],  # Commit with timestamp and system info
-                ["git", "push", auth_repo_url, "master"]  # Push to master
+                ["git", "commit", "-m", f"Logs update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {os.uname().sysname if hasattr(os, 'uname') else 'Windows'}"],  # Commit with timestamp and system info
+                ["git", "push", f"https://nir351988:{github_token}@github.com/nir351988/Balancewheel.git", "master"]  # Push with auth
             ]
             
             for cmd in commands:
                 try:
-                    result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.project_root)
+                    result = subprocess.run(cmd, capture_output=True, text=True, cwd=project_root, env=env)
                     if result.returncode != 0:
-                        self.logger.warning(f"Git command failed: {' '.join(cmd)} - {result.stderr.strip()}")
+                        # Sanitize error message to avoid logging tokens
+                        error_msg = result.stderr.strip()
+                        # Remove any URLs with tokens
+                        error_msg = re.sub(r'https://[^@]+@github\.com', 'https://[REDACTED]@github.com', error_msg)
+                        # Log sanitized message
+                        if error_msg and "already exists" not in error_msg.lower():
+                            self.logger.warning(f"Git command failed: {' '.join(cmd[:2])} - {error_msg[:100]}")
                     else:
-                        self.logger.info(f"Git command successful: {' '.join(cmd)}")
+                        self.logger.info(f"Git command successful: {' '.join(cmd[:2])}")
                 except Exception as e:
-                    self.logger.error(f"Error running git command {' '.join(cmd)}: {str(e)}")
+                    self.logger.error(f"Error running git command: {str(e)}")
                     
         except Exception as e:
             self.logger.error(f"Failed to push logs to GitHub: {str(e)}")
