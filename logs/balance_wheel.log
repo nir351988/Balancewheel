@@ -42,3 +42,55 @@
 2026-05-14 10:48:25 India Standard Time - BalanceWheel - INFO - [shutdown:1080] - BalanceWheel Bot shutting down: Trading cycle completed
 2026-05-14 10:48:25 India Standard Time - BalanceWheel - INFO - [shutdown:1081] - ================================================================================
 2026-05-14 10:48:25 India Standard Time - BalanceWheel - INFO - [_push_logs_to_github:1069] - Git command successful: git config
+2026-05-14 10:48:25 India Standard Time - BalanceWheel - INFO - [_push_logs_to_github:1069] - Git command successful: git config
+2026-05-14 10:48:25 India Standard Time - BalanceWheel - INFO - [_push_logs_to_github:1069] - Git command successful: git add
+2026-05-14 10:48:26 India Standard Time - BalanceWheel - INFO - [_push_logs_to_github:1069] - Git command successful: git commit
+2026-05-14 10:48:28 India Standard Time - BalanceWheel - INFO - [_push_logs_to_github:1069] - Git command successful: git push
+2026-05-14 10:53:39 India Standard Time - BalanceWheel - INFO - [__init__:839] - ================================================================================
+2026-05-14 10:53:39 India Standard Time - BalanceWheel - INFO - [__init__:840] - BalanceWheel Bot Initialized - BalanceWheel v1.0.0
+2026-05-14 10:53:39 India Standard Time - BalanceWheel - INFO - [__init__:841] - Dry Run Mode: False
+2026-05-14 10:53:39 India Standard Time - BalanceWheel - INFO - [__init__:844] - Repository configured from env: https://github.com/nir351988/Balancewheel.git
+2026-05-14 10:53:39 India Standard Time - BalanceWheel - INFO - [__init__:846] - GitHub token loaded from environment (hidden)
+2026-05-14 10:53:39 India Standard Time - BalanceWheel - INFO - [__init__:847] - ================================================================================
+2026-05-14 10:53:39 India Standard Time - BalanceWheel - INFO - [startup:931] - Starting up BalanceWheel bot...
+2026-05-14 10:53:40 India Standard Time - BalanceWheel - INFO - [startup:938] - Authentication successful: Fresh authentication successful
+2026-05-14 10:53:40 India Standard Time - BalanceWheel - INFO - [_init_db:151] - Database initialized: data/balance_wheel.db
+2026-05-14 10:53:40 India Standard Time - BalanceWheel - INFO - [startup:959] - Bot startup completed successfully!
+2026-05-14 10:53:40 India Standard Time - BalanceWheel - INFO - [run_cycle:973] - --------------------------------------------------------------------------------
+2026-05-14 10:53:40 India Standard Time - BalanceWheel - INFO - [run_cycle:974] - Starting trading cycle at 2026-05-14 10:53:40.958926
+2026-05-14 10:53:43 India Standard Time - BalanceWheel - WARNING - [get_portfolio_position:436] - No holdings found for ITC
+2026-05-14 10:53:43 India Standard Time - BalanceWheel - WARNING - [run_cycle:989] - Skipping ITC: missing market data or no current holding
+2026-05-14 10:53:45 India Standard Time - BalanceWheel - WARNING - [get_portfolio_position:436] - No holdings found for TCS
+2026-05-14 10:53:45 India Standard Time - BalanceWheel - WARNING - [run_cycle:989] - Skipping TCS: missing market data or no current holding
+2026-05-14 10:53:47 India Standard Time - BalanceWheel - INFO - [run_cycle:1001] - [BUY] HCLTECH: Price dip 25.63% >= 15%. Buy 35 shares to move avg toward 5% buffer above LTP.
+2026-05-14 10:53:50 India Standard Time - BalanceWheel - ERROR - [get_nifty_50_change_percent:576] - Error fetching Nifty 50 data: 429 Client Error: Too Many Requests for url: https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI
+2026-05-14 10:53:50 India Standard Time - BalanceWheel - ERROR - [execute_buy_order:826] - Exception during order execution: 'NoneType' object has no attribute 'get'
+2026-05-14 10:53:50 India Standard Time - BalanceWheel - INFO - [run_cycle:1013] - Execution result: Exception during order execution: 'NoneType' object has no attribute 'get'
+2026-05-14 10:53:52 India Standard Time - BalanceWheel - WARNING - [get_portfolio_position:436] - No holdings found for POWERGRID
+2026-05-14 10:53:52 India Standard Time - BalanceWheel - WARNING - [run_cycle:989] - Skipping POWERGRID: missing market data or no current holding
+2026-05-14 10:53:54 India Standard Time - BalanceWheel - WARNING - [get_portfolio_position:436] - No holdings found for COALINDIA
+2026-05-14 10:53:54 India Standard Time - BalanceWheel - WARNING - [run_cycle:989] - Skipping COALINDIA: missing market data or no current holding
+2026-05-14 10:53:56 India Standard Time - BalanceWheel - WARNING - [get_portfolio_position:436] - No holdings found for RECLTD
+2026-05-14 10:53:56 India Standard Time - BalanceWheel - WARNING - [run_cycle:989] - Skipping RECLTD: missing market data or no current holding
+2026-05-14 10:53:58 India Standard Time - BalanceWheel - WARNING - [get_portfolio_position:436] - No holdings found for PFC
+2026-05-14 10:53:58 India Standard Time - BalanceWheel - WARNING - [run_cycle:989] - Skipping PFC: missing market data or no current holding
+2026-05-14 10:54:00 India Standard Time - BalanceWheel - WARNING - [get_portfolio_position:436] - No holdings found for ASIANPAINT
+2026-05-14 10:54:00 India Standard Time - BalanceWheel - WARNING - [run_cycle:989] - Skipping ASIANPAINT: missing market data or no current holding
+2026-05-14 10:54:01 India Standard Time - BalanceWheel - WARNING - [get_portfolio_position:436] - No holdings found for LT
+2026-05-14 10:54:01 India Standard Time - BalanceWheel - WARNING - [run_cycle:989] - Skipping LT: missing market data or no current holding
+2026-05-14 10:54:03 India Standard Time - BalanceWheel - INFO - [run_cycle:1001] - [BUY] HDFCBANK: Price dip 19.68% >= 15%. Buy 27 shares to move avg toward 5% buffer above LTP.
+2026-05-14 10:54:05 India Standard Time - BalanceWheel - ERROR - [get_nifty_50_change_percent:576] - Error fetching Nifty 50 data: 429 Client Error: Too Many Requests for url: https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI
+2026-05-14 10:54:06 India Standard Time - BalanceWheel - ERROR - [execute_buy_order:826] - Exception during order execution: 'NoneType' object has no attribute 'get'
+2026-05-14 10:54:06 India Standard Time - BalanceWheel - INFO - [run_cycle:1013] - Execution result: Exception during order execution: 'NoneType' object has no attribute 'get'
+2026-05-14 10:54:07 India Standard Time - BalanceWheel - WARNING - [get_portfolio_position:436] - No holdings found for TITAN
+2026-05-14 10:54:07 India Standard Time - BalanceWheel - WARNING - [run_cycle:989] - Skipping TITAN: missing market data or no current holding
+2026-05-14 10:54:09 India Standard Time - BalanceWheel - WARNING - [get_portfolio_position:436] - No holdings found for BAJAJ-AUTO
+2026-05-14 10:54:09 India Standard Time - BalanceWheel - WARNING - [run_cycle:989] - Skipping BAJAJ-AUTO: missing market data or no current holding
+2026-05-14 10:54:11 India Standard Time - BalanceWheel - WARNING - [get_portfolio_position:436] - No holdings found for RELIANCE
+2026-05-14 10:54:11 India Standard Time - BalanceWheel - WARNING - [run_cycle:989] - Skipping RELIANCE: missing market data or no current holding
+2026-05-14 10:54:11 India Standard Time - BalanceWheel - INFO - [run_cycle:1020] - Trading cycle completed. Processed 2 stocks.
+2026-05-14 10:54:11 India Standard Time - BalanceWheel - INFO - [run_cycle:1021] - --------------------------------------------------------------------------------
+2026-05-14 10:54:11 India Standard Time - BalanceWheel - INFO - [shutdown:1079] - ================================================================================
+2026-05-14 10:54:11 India Standard Time - BalanceWheel - INFO - [shutdown:1080] - BalanceWheel Bot shutting down: Trading cycle completed
+2026-05-14 10:54:11 India Standard Time - BalanceWheel - INFO - [shutdown:1081] - ================================================================================
+2026-05-14 10:54:11 India Standard Time - BalanceWheel - INFO - [_push_logs_to_github:1069] - Git command successful: git config
