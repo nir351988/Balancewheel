@@ -751,9 +751,14 @@ class BalanceWheelEngine:
         # TODO: Implement sector diversification check with config
         
         # Check 4: Market Sentiment (Nifty down > 3%)
-        nifty_change = self.market_data_manager.get_nifty_50_change_percent()
-        if nifty_change and nifty_change < -self.rules["market_sentiment_nifty_down_percent"]:
-            return False, 0, f"Market Sentiment Lock: Nifty down {abs(nifty_change):.2f}% (> {self.rules['market_sentiment_nifty_down_percent']}%)"
+        # Skip this check if we can't fetch Nifty data (don't block execution)
+        try:
+            nifty_change = self.market_data_manager.get_nifty_50_change_percent()
+            if nifty_change and nifty_change < -self.rules["market_sentiment_nifty_down_percent"]:
+                return False, 0, f"Market Sentiment Lock: Nifty down {abs(nifty_change):.2f}% (> {self.rules['market_sentiment_nifty_down_percent']}%)"
+        except Exception as e:
+            # Log the error but don't block execution due to sentiment check failure
+            self.logger.warning(f"Could not check market sentiment: {str(e)}. Proceeding with execution.")
         
         # Check 5: Safety Buffer - Adjust shares if needed
         required_amount = shares_to_buy * ltp
@@ -794,10 +799,16 @@ class BalanceWheelEngine:
                 self.db_manager.log_trade(symbol, quantity, ltp, order_id, True)
                 return True, order_id, f"DRY RUN: {symbol} x{quantity} @ {ltp}"
             
-            # Real execution
+            # Real execution - Fetch correct symbol token
+            symbol_token, trading_symbol = self.market_data_manager._lookup_symbol_token(symbol, "NSE")
+            if not symbol_token or not trading_symbol:
+                error_msg = f"Could not resolve symbol token for {symbol}"
+                self.logger.error(f"Order placement failed for {symbol}: {error_msg}")
+                return False, None, error_msg
+            
             order_params = {
                 "variety": "REGULAR",
-                "symboltoken": "0",  # Symbol token from symbol details
+                "symboltoken": symbol_token,
                 "transactiontype": "BUY",
                 "quantity": quantity,
                 "price": ltp,
@@ -806,7 +817,8 @@ class BalanceWheelEngine:
             }
             order_response = self.auth_manager.get_smartapi_instance().placeOrder(order_params)
             
-            if order_response:
+            if order_response and isinstance(order_response, str):
+                # Successful order - response is order ID string
                 order_id = order_response
                 total_amount = quantity * ltp
                 
@@ -816,10 +828,16 @@ class BalanceWheelEngine:
                 )
                 self.db_manager.log_trade(symbol, quantity, ltp, order_id, False)
                 return True, order_id, f"Order placed: {order_id}"
-            else:
+            elif order_response and isinstance(order_response, dict):
+                # Error response - dict format
                 error_msg = order_response.get("message", "Unknown error")
                 self.logger.error(f"Order placement failed for {symbol}: {error_msg}")
                 return False, None, f"Order failed: {error_msg}"
+            else:
+                # Failed or None response
+                error_msg = f"No response from broker for {symbol} - Order rejected or error occurred"
+                self.logger.error(f"Order placement failed for {symbol}: {error_msg}")
+                return False, None, error_msg
         
         except Exception as e:
             error_msg = f"Exception during order execution: {str(e)}"

@@ -1,7 +1,7 @@
 {
   "app_name": "BalanceWheel",
   "version": "1.0.0",
-  "dry_run": true,
+  "dry_run": false,
   "broker": {
     "platform": "Angel One",
     "api_key": "YOUR_API_KEY_HERE",
@@ -15,7 +15,7 @@
     "high_alert_lower_threshold_percent": 12,
     "high_alert_upper_threshold_percent": 15,
     "minimum_balance_required_inr": 2000,
-    "cooldown_days": 7,
+    "cooldown_days": 0,
     "max_sector_buys_per_day": 1,
     "market_sentiment_nifty_down_percent": 3,
     "safety_buffer_subtract_shares": 1
