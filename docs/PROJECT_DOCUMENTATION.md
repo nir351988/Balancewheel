@@ -28,8 +28,14 @@ Architecture & File Map
   - data/ — SQLite DB directory (data/balance_wheel.db).
   - logs/ — Runtime logs (RotatingFileHandler). NOTE: logs are sensitive and should be excluded from commits unless sanitized.
   - tests/ — Unit tests.
+  - smartapi/ and SmartApi/ — Local test shims for offline unit testing.
   - .env — Local environment secrets (never commit to remote).
   - docs/ — Project documentation (this folder).
+
+Test Shim Note
+- The repository includes lightweight local shim packages in `smartapi/` and `SmartApi/`.
+- These shims allow unit tests to import `SmartConnect` without requiring the full Angel One SDK during offline or CI test runs.
+- They are not intended for live trading; production deployments must use the real `SmartApi` package from `requirements.txt`.
 
 Configuration & Secrets
 - Secrets and credentials are stored in `.env` for local runs. Recommended deployment practices:
