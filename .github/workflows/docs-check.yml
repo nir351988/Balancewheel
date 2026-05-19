@@ -14,12 +14,14 @@ jobs:
           fetch-depth: 0
 
       - name: Set up bash
-        run: sudo apt-get update && sudo apt-get install -y git
+        run: sudo apt-get update && sudo apt-get install -y git jq
 
-      - name: Make script executable
-        run: chmod +x .github/scripts/check_changelog.sh
+      - name: Make scripts executable
+        run: chmod +x .github/scripts/*.sh
 
-      - name: Run changelog check
+      - name: Run changelog check and comment on PR if necessary
         env:
-          GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
-        run: .github/scripts/check_changelog.sh
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: .github/scripts/check_and_comment.sh
