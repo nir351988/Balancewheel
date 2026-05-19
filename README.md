@@ -620,3 +620,17 @@ This bot is provided as-is for educational and trading purposes. Use at your own
 
 **Last Updated:** May 10, 2026  
 **Maintained By:** Senior Python Developer & FinTech Engineer
+
+---
+
+## Documentation
+
+This repository includes a dedicated `docs/` folder with authoritative references and maintenance guidance. Keep these documents up to date whenever you change code, configuration, or logging behavior.
+
+- Project documentation: [docs/PROJECT_DOCUMENTATION.md](docs/PROJECT_DOCUMENTATION.md)
+- Changelog: [docs/CHANGELOG.md](docs/CHANGELOG.md)
+- Docs maintenance guide: [docs/DOCS_MAINTENANCE.md](docs/DOCS_MAINTENANCE.md)
+
+CI & PR checks
+- The repository includes a Pull Request template and a lightweight GitHub Action that runs on PRs to help ensure the changelog or documentation is updated when core files change. See `.github/` for details.
+
