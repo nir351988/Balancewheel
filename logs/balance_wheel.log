@@ -289,3 +289,45 @@
 2026-05-30 03:32:29 UTC - BalanceWheel - INFO - [shutdown:1179] - ================================================================================
 2026-05-30 03:32:29 UTC - BalanceWheel - INFO - [_push_logs_to_github:1167] - Git command successful: git config
 2026-05-30 03:32:29 UTC - BalanceWheel - INFO - [_push_logs_to_github:1167] - Git command successful: git config
+2026-05-30 03:32:29 UTC - BalanceWheel - INFO - [_push_logs_to_github:1167] - Git command successful: git add
+2026-05-30 03:32:30 UTC - BalanceWheel - INFO - [_push_logs_to_github:1167] - Git command successful: git commit
+2026-05-30 03:32:30 UTC - BalanceWheel - INFO - [_push_logs_to_github:1167] - Git command successful: git push
+2026-05-30 03:40:20 UTC - BalanceWheel - INFO - [__init__:889] - ================================================================================
+2026-05-30 03:40:20 UTC - BalanceWheel - INFO - [__init__:890] - BalanceWheel Bot Initialized - BalanceWheel v1.0.6
+2026-05-30 03:40:20 UTC - BalanceWheel - WARNING - [__init__:894] - LIVE PRODUCTION MODE — real BUY orders will be sent to Angel One when signals fire
+2026-05-30 03:40:20 UTC - BalanceWheel - INFO - [__init__:899] - Repository configured from env: https://github.com/nir351988/Balancewheel.git
+2026-05-30 03:40:20 UTC - BalanceWheel - INFO - [__init__:901] - GitHub token loaded from environment (hidden)
+2026-05-30 03:40:20 UTC - BalanceWheel - INFO - [__init__:902] - ================================================================================
+2026-05-30 03:42:02 UTC - BalanceWheel - INFO - [__init__:889] - ================================================================================
+2026-05-30 03:42:02 UTC - BalanceWheel - INFO - [__init__:890] - BalanceWheel Bot Initialized - BalanceWheel v1.0.6
+2026-05-30 03:42:02 UTC - BalanceWheel - WARNING - [__init__:894] - LIVE PRODUCTION MODE — real BUY orders will be sent to Angel One when signals fire
+2026-05-30 03:42:02 UTC - BalanceWheel - INFO - [__init__:899] - Repository configured from env: https://github.com/nir351988/Balancewheel.git
+2026-05-30 03:42:02 UTC - BalanceWheel - INFO - [__init__:901] - GitHub token loaded from environment (hidden)
+2026-05-30 03:42:02 UTC - BalanceWheel - INFO - [__init__:902] - ================================================================================
+2026-05-30 03:42:02 UTC - BalanceWheel - INFO - [startup:995] - Starting up BalanceWheel bot...
+2026-05-30 03:42:04 UTC - BalanceWheel - INFO - [startup:1002] - Authentication successful: Fresh authentication successful
+2026-05-30 03:42:04 UTC - BalanceWheel - INFO - [_init_db:150] - Database initialized: data/balance_wheel.db
+2026-05-30 03:42:04 UTC - BalanceWheel - INFO - [startup:1023] - Bot startup completed successfully!
+2026-05-30 03:42:04 UTC - BalanceWheel - INFO - [run_cycle:1083] - --------------------------------------------------------------------------------
+2026-05-30 03:42:04 UTC - BalanceWheel - INFO - [run_cycle:1084] - Starting trading cycle at 2026-05-30 03:42:04.847819
+2026-05-30 03:42:04 UTC - BalanceWheel - INFO - [run_cycle:1089] - Portfolio mode: analyzing demat holdings only (watchlist has 13 names for sector/metadata reference)
+2026-05-30 03:42:05 UTC - BalanceWheel - INFO - [get_all_holdings:326] - Loaded 3 portfolio holding(s) from demat
+2026-05-30 03:42:07 UTC - BalanceWheel - INFO - [run_cycle:1114] - [BUY] BAJAJFINSV [portfolio only]: Price dip 15.51% >= 15%. Buy 2 shares to move avg toward 5% buffer above LTP.
+2026-05-30 03:42:10 UTC - BalanceWheel - ERROR - [get_nifty_50_change_percent:605] - Error fetching Nifty 50 data: 429 Client Error: Too Many Requests for url: https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI
+2026-05-30 03:42:11 UTC - BalanceWheel - ERROR - [execute_buy_order:876] - Exception during order execution: Couldn't parse the JSON response received from the server: b''
+2026-05-30 03:42:11 UTC - BalanceWheel - INFO - [run_cycle:1125] - Execution result: Exception during order execution: Couldn't parse the JSON response received from the server: b''
+2026-05-30 03:42:13 UTC - BalanceWheel - INFO - [run_cycle:1114] - [BUY] HDFCBANK [watchlist]: Price dip 20.24% >= 15%. Buy 28 shares to move avg toward 5% buffer above LTP.
+2026-05-30 03:42:16 UTC - BalanceWheel - ERROR - [get_nifty_50_change_percent:605] - Error fetching Nifty 50 data: 429 Client Error: Too Many Requests for url: https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI
+2026-05-30 03:42:17 UTC - BalanceWheel - ERROR - [execute_buy_order:876] - Exception during order execution: Couldn't parse the JSON response received from the server: b''
+2026-05-30 03:42:17 UTC - BalanceWheel - INFO - [run_cycle:1125] - Execution result: Exception during order execution: Couldn't parse the JSON response received from the server: b''
+2026-05-30 03:42:19 UTC - BalanceWheel - INFO - [run_cycle:1114] - [BUY] HCLTECH [watchlist]: Price dip 20.94% >= 15%. Buy 25 shares to move avg toward 5% buffer above LTP.
+2026-05-30 03:42:21 UTC - BalanceWheel - ERROR - [get_nifty_50_change_percent:605] - Error fetching Nifty 50 data: 429 Client Error: Too Many Requests for url: https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI
+2026-05-30 03:42:23 UTC - BalanceWheel - ERROR - [execute_buy_order:876] - Exception during order execution: Couldn't parse the JSON response received from the server: b''
+2026-05-30 03:42:23 UTC - BalanceWheel - INFO - [run_cycle:1125] - Execution result: Exception during order execution: Couldn't parse the JSON response received from the server: b''
+2026-05-30 03:42:23 UTC - BalanceWheel - INFO - [run_cycle:1132] - Trading cycle completed. Processed 3 holding(s).
+2026-05-30 03:42:23 UTC - BalanceWheel - INFO - [run_cycle:1133] - --------------------------------------------------------------------------------
+2026-05-30 03:42:23 UTC - BalanceWheel - INFO - [shutdown:1191] - ================================================================================
+2026-05-30 03:42:23 UTC - BalanceWheel - INFO - [shutdown:1192] - BalanceWheel Bot shutting down: Trading cycle completed
+2026-05-30 03:42:23 UTC - BalanceWheel - INFO - [shutdown:1193] - ================================================================================
+2026-05-30 03:42:23 UTC - BalanceWheel - INFO - [_push_logs_to_github:1181] - Git command successful: git config
+2026-05-30 03:42:23 UTC - BalanceWheel - INFO - [_push_logs_to_github:1181] - Git command successful: git config
