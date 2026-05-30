@@ -462,10 +462,14 @@ rm .credentials.json   # Windows: del .credentials.json
 python dev_tools.py --test auth
 ```
 
-### Issue: Bot uses test stub instead of real Angel One API
+### Issue: `unexpected keyword argument 'clientCode'` on login
 
-**Cause:** Official SDK not installed; local `smartapi/` shim used as fallback  
-**Solution:** Install/upgrade `smartapi-python>=1.5.5`. See [docs/VERIFICATION.md](docs/VERIFICATION.md).
+**Cause:** Repo used to ship a `smartapi/` test folder that shadowed the real SDK when run from `~/BalanceWheel`.  
+**Fix:** `git pull` latest code, `pip install -r requirements-runtime.txt`, then verify:
+```bash
+python -c "from SmartApi.smartConnect import SmartConnect; import inspect; print(inspect.signature(SmartConnect.generateSession))"
+# Should show: (self, clientCode, password, totp)
+```
 
 ### Issue: "Insufficient Funds"
 

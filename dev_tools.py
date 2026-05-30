@@ -186,7 +186,6 @@ class DevTools:
         logger.info("\nChecking dependencies:")
         required = [
             "requests",
-            "SmartApi",
             "pyotp",
         ]
         optional = [
@@ -201,6 +200,19 @@ class DevTools:
             except ImportError:
                 logger.warning(f"  ✗ {package} - NOT INSTALLED")
                 missing.append(package)
+
+        try:
+            from smartapi_client import SmartConnect
+            import inspect
+            sig = str(inspect.signature(SmartConnect.generateSession))
+            if "totp" in sig:
+                logger.info(f"  ✓ SmartApi SDK (generateSession{sig})")
+            else:
+                logger.warning("  ✗ SmartApi SDK looks like a stub (no totp param)")
+                missing.append("smartapi-python")
+        except ImportError as e:
+            logger.warning(f"  ✗ SmartApi SDK - {e}")
+            missing.append("smartapi-python")
 
         for package in optional:
             try:

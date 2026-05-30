@@ -19,12 +19,7 @@ from pathlib import Path
 
 # Third-party imports (install via requirements.txt)
 import requests
-try:
-    # Prefer the installed SmartApi package when available
-    from SmartApi import SmartConnect
-except Exception:
-    # Fall back to a local shim during testing or when the package isn't available
-    from smartapi.smartConnect import SmartConnect
+from smartapi_client import SmartConnect
 from dotenv import load_dotenv
 import pyotp
 

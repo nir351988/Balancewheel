@@ -4,6 +4,12 @@ All notable changes to this project should be documented in this file. Follow Se
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-05-30
+
+### Fixed
+- **PythonAnywhere auth:** Removed top-level `smartapi/` folder that shadowed the official SDK; added `smartapi_client.py` for reliable imports.
+- Login error `unexpected keyword argument 'clientCode'` no longer occurs when `smartapi-python` is installed.
+
 ## [1.0.2] - 2026-05-30
 
 ### Fixed

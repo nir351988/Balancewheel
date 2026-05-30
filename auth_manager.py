@@ -9,10 +9,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, Optional, Tuple
 import pyotp
-try:
-    from SmartApi import SmartConnect
-except Exception:
-    from smartapi.smartConnect import SmartConnect
+from smartapi_client import SmartConnect
 
 logger = logging.getLogger(__name__)
 

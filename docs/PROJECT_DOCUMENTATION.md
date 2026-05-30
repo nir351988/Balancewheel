@@ -28,15 +28,15 @@ Architecture & File Map
   - data/ — SQLite DB directory (data/balance_wheel.db).
   - logs/ — Runtime logs (RotatingFileHandler). NOTE: logs are sensitive and should be excluded from commits unless sanitized.
   - tests/ — Unit tests.
-  - smartapi/ and SmartApi/ — Local test shims for offline unit testing.
+  - test_shims/ — Offline SmartConnect stub for pytest only.
+  - smartapi_client.py — Loads official Angel One SDK (production).
   - .env — Local environment secrets (never commit to remote).
   - docs/ — Project documentation (this folder).
 
 Test Shim Note
-- The repository includes a lightweight local shim in `smartapi/` (see `smartapi/smartConnect.py`).
-- Unit tests and CI can import a minimal `SmartConnect` without network access.
-- **Production:** install `smartapi-python>=1.5.5` from `requirements.txt`. The app imports `from SmartApi import SmartConnect` when available.
-- Angel One login requires **TOTP** (SDK 1.3.x will fail with unexpected keyword `totp`). See [VERIFICATION.md](VERIFICATION.md).
+- Do **not** add a top-level `smartapi/` package; it shadows the official SDK and breaks login (`unexpected keyword argument 'clientCode'`).
+- **Production:** `pip install -r requirements-runtime.txt`; imports go through `smartapi_client.py`.
+- Angel One login requires **TOTP** (SDK >= 1.5.5). See [VERIFICATION.md](VERIFICATION.md).
 
 Documentation index
 - [VERIFICATION.md](VERIFICATION.md) — pre-flight checks and known issues
