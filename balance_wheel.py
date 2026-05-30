@@ -262,6 +262,13 @@ def normalize_equity_symbol(tradingsymbol: str = "", symbol: str = "") -> str:
     return raw
 
 
+def is_nse_eq_tradingsymbol(tradingsymbol: str, symbol: str) -> bool:
+    """True if tradingsymbol is the NSE equity series for symbol (not IQ/RL/BE/etc.)."""
+    ts = (tradingsymbol or "").strip().upper()
+    sym = symbol.strip().upper()
+    return ts == sym or ts == f"{sym}-EQ"
+
+
 class MarketDataManager:
     """Fetches and manages market data from Angel One API."""
     
@@ -315,6 +322,7 @@ class MarketDataManager:
                 {
                     "symbol": symbol,
                     "tradingsymbol": tradingsymbol,
+                    "symboltoken": holding.get("symboltoken") or holding.get("symbolToken"),
                     "quantity": quantity,
                     "avg_price": avg_price,
                     "ltp": float(holding.get("ltp", 0) or 0),
@@ -341,18 +349,40 @@ class MarketDataManager:
                 data = data.get("holdings") or data.get("holding") or data.get("data") or [data]
 
             if isinstance(data, list):
-                # Prefer exact symbol matches or NSE equity names ending with -EQ
                 symbol_upper = symbol.upper()
                 for item in data:
-                    tradingsymbol = item.get("tradingsymbol", "").upper()
-                    if tradingsymbol == symbol_upper or tradingsymbol == f"{symbol_upper}-EQ":
+                    tradingsymbol = item.get("tradingsymbol", "")
+                    if is_nse_eq_tradingsymbol(tradingsymbol, symbol_upper):
                         return item.get("symboltoken"), item.get("tradingsymbol")
-                first_item = data[0]
-                return first_item.get("symboltoken"), first_item.get("tradingsymbol")
+                self.logger.warning(
+                    f"No NSE-EQ match for {symbol} in search results "
+                    f"(got {len(data)} instruments; need SYMBOL-EQ)"
+                )
 
         except Exception as e:
             self.logger.error(f"Error searching symbol token for {symbol}: {str(e)}")
         return None, None
+
+    def resolve_order_instrument(self, symbol: str, exchange: str = "NSE") -> Tuple[Optional[str], Optional[str], str]:
+        """
+        Resolve symboltoken and tradingsymbol for placeOrder.
+        Prefer demat holding row, then searchScrip (EQ series only).
+        """
+        symbol_upper = symbol.upper()
+        for holding in self.get_all_holdings():
+            if holding["symbol"] == symbol_upper:
+                token = holding.get("symboltoken")
+                ts = holding.get("tradingsymbol")
+                if token and ts:
+                    self.logger.debug(
+                        f"Order instrument for {symbol} from holdings: {ts} token={token}"
+                    )
+                    return str(token), ts, exchange
+
+        token, ts = self._lookup_symbol_token(symbol, exchange)
+        if token and ts:
+            return str(token), ts, exchange
+        return None, None, exchange
 
     def _parse_market_quote(self, quote_data: Dict) -> Optional[float]:
         if not quote_data:
@@ -828,52 +858,65 @@ class BalanceWheelEngine:
                 self.db_manager.log_trade(symbol, quantity, ltp, order_id, True)
                 return True, order_id, f"DRY RUN: {symbol} x{quantity} @ {ltp}"
             
-            # Real execution - Fetch correct symbol token
-            symbol_token, trading_symbol = self.market_data_manager._lookup_symbol_token(symbol, "NSE")
+            order_cfg = self.config.get("order_settings", {})
+            exchange = order_cfg.get("exchange", "NSE")
+
+            symbol_token, trading_symbol, exchange = self.market_data_manager.resolve_order_instrument(
+                symbol, exchange
+            )
             if not symbol_token or not trading_symbol:
-                error_msg = f"Could not resolve symbol token for {symbol}"
+                error_msg = f"Could not resolve NSE-EQ symbol token for {symbol}"
                 self.logger.error(f"Order placement failed for {symbol}: {error_msg}")
                 return False, None, error_msg
-            
+
+            # Angel One placeOrder schema (see SmartAPI docs)
             order_params = {
-                "variety": "REGULAR",
-                "symboltoken": symbol_token,
+                "variety": order_cfg.get("variety", "NORMAL"),
+                "tradingsymbol": trading_symbol,
+                "symboltoken": str(symbol_token),
                 "transactiontype": "BUY",
-                "quantity": quantity,
-                "price": ltp,
-                "pricetype": "LIMIT",
-                "producttype": "MIS"  # Margin Intraday Short
+                "exchange": exchange,
+                "ordertype": order_cfg.get("ordertype", "LIMIT"),
+                "producttype": order_cfg.get("producttype", "DELIVERY"),
+                "duration": order_cfg.get("duration", "DAY"),
+                "price": str(round(float(ltp), 2)),
+                "squareoff": "0",
+                "stoploss": "0",
+                "quantity": str(int(quantity)),
             }
-            
-            self.logger.debug(f"Placing order with params: {order_params}")
-            order_response = self.auth_manager.get_smartapi_instance().placeOrder(order_params)
-            self.logger.debug(f"Order response type: {type(order_response)}, value: {order_response}")
-            
-            if order_response and isinstance(order_response, str):
-                # Successful order - response is order ID string
-                order_id = order_response
-                total_amount = quantity * ltp
-                
-                self.logger.info(
-                    f"Order placed successfully: {symbol} x{quantity} @ {ltp}. "
-                    f"Order ID: {order_id}. Total: {total_amount:.2f} INR"
-                )
-                self.db_manager.log_trade(symbol, quantity, ltp, order_id, False)
-                return True, order_id, f"Order placed: {order_id}"
-            elif order_response and isinstance(order_response, dict):
-                # Error response - dict format
-                error_msg = order_response.get("message", "Unknown error")
-                self.logger.error(f"Order placement failed for {symbol}: {error_msg}")
-                return False, None, f"Order failed: {error_msg}"
-            else:
-                # Failed or None response
-                error_msg = f"No response from broker for {symbol} - Order rejected or error occurred"
-                self.logger.error(f"Order placement failed for {symbol}: {error_msg}")
-                return False, None, error_msg
-        
+
+            self.logger.info(
+                f"Placing LIVE order: {trading_symbol} x{quantity} "
+                f"{order_params['ordertype']} @ {order_params['price']} "
+                f"({order_params['producttype']})"
+            )
+            self.logger.debug(f"Order params: {order_params}")
+
+            api = self.auth_manager.get_smartapi_instance()
+            order_response = api.placeOrderFullResponse(order_params)
+            self.logger.debug(f"Order full response: {order_response}")
+
+            if order_response and order_response.get("status") is True:
+                data = order_response.get("data") or {}
+                order_id = data.get("orderid") or data.get("orderId")
+                if order_id:
+                    total_amount = quantity * ltp
+                    self.logger.info(
+                        f"Order placed successfully: {trading_symbol} x{quantity} @ {ltp}. "
+                        f"Order ID: {order_id}. Total: {total_amount:.2f} INR"
+                    )
+                    self.db_manager.log_trade(symbol, quantity, ltp, str(order_id), False)
+                    return True, str(order_id), f"Order placed: {order_id}"
+
+            error_msg = "Unknown error"
+            if isinstance(order_response, dict):
+                error_msg = order_response.get("message") or order_response.get("errorcode") or error_msg
+            self.logger.error(f"Order placement failed for {symbol}: {error_msg} | response={order_response}")
+            return False, None, f"Order failed: {error_msg}"
+
         except Exception as e:
             error_msg = f"Exception during order execution: {str(e)}"
-            self.logger.error(error_msg)
+            self.logger.error(error_msg, exc_info=True)
             return False, None, error_msg
 
 

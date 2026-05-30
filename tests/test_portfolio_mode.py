@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, "..")
 
-from balance_wheel import normalize_equity_symbol, BalanceWheelBot
+from balance_wheel import normalize_equity_symbol, is_nse_eq_tradingsymbol, BalanceWheelBot
 
 
 class TestNormalizeEquitySymbol(unittest.TestCase):
@@ -17,6 +17,11 @@ class TestNormalizeEquitySymbol(unittest.TestCase):
 
     def test_symbol_fallback(self):
         self.assertEqual(normalize_equity_symbol("", "hdfcbank"), "HDFCBANK")
+
+    def test_eq_tradingsymbol_only(self):
+        self.assertTrue(is_nse_eq_tradingsymbol("HCLTECH-EQ", "HCLTECH"))
+        self.assertFalse(is_nse_eq_tradingsymbol("HCLTECH-IQ", "HCLTECH"))
+        self.assertTrue(is_nse_eq_tradingsymbol("BAJAJ-AUTO-EQ", "BAJAJ-AUTO"))
 
 
 class TestPortfolioMetadata(unittest.TestCase):

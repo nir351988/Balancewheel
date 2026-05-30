@@ -4,6 +4,13 @@ All notable changes to this project should be documented in this file. Follow Se
 
 ## [Unreleased]
 
+## [1.0.8] - 2026-05-30
+
+### Fixed
+- Live `placeOrder`: correct Angel One fields (`ordertype`, `DELIVERY`, `NORMAL`, `exchange`, `tradingsymbol`).
+- Prefer `HCLTECH-EQ` (not IQ/RL) via holdings token or strict EQ search.
+- Use `placeOrderFullResponse` for clear broker error messages.
+
 ## [1.0.7] - 2026-05-30
 
 ### Fixed
