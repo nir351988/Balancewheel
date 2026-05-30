@@ -4,7 +4,7 @@ Purpose
 - Explain how to keep documentation current and provide a lightweight workflow for updating docs after code changes.
 
 When to update docs
-- Update `docs/PROJECT_DOCUMENTATION.md` and `docs/CHANGELOG.md` whenever:
+- Update `docs/PROJECT_DOCUMENTATION.md`, `docs/VERIFICATION.md`, and `docs/CHANGELOG.md` whenever:
   - Public behavior, configuration keys, or runtime semantics change.
   - New files or modules are added that affect the architecture.
   - Logging, deployment, or security behavior changes (e.g., new token handling, log push behavior).

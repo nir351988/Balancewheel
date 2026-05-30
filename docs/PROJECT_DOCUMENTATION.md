@@ -1,8 +1,8 @@
 BalanceWheel — Project Documentation
 =================================
 
-Version: 1.0.0
-Last Updated: 2026-05-19
+Version: 1.0.1
+Last Updated: 2026-05-30
 
 Purpose
 - Full project reference, architecture, operation, and maintenance guide for BalanceWheel trading bot.
@@ -33,9 +33,14 @@ Architecture & File Map
   - docs/ — Project documentation (this folder).
 
 Test Shim Note
-- The repository includes lightweight local shim packages in `smartapi/` and `SmartApi/`.
-- These shims allow unit tests to import `SmartConnect` without requiring the full Angel One SDK during offline or CI test runs.
-- They are not intended for live trading; production deployments must use the real `SmartApi` package from `requirements.txt`.
+- The repository includes a lightweight local shim in `smartapi/` (see `smartapi/smartConnect.py`).
+- Unit tests and CI can import a minimal `SmartConnect` without network access.
+- **Production:** install `smartapi-python>=1.5.5` from `requirements.txt`. The app imports `from SmartApi import SmartConnect` when available.
+- Angel One login requires **TOTP** (SDK 1.3.x will fail with unexpected keyword `totp`). See [VERIFICATION.md](VERIFICATION.md).
+
+Documentation index
+- [VERIFICATION.md](VERIFICATION.md) — pre-flight checks and known issues
+- [CHANGELOG.md](CHANGELOG.md) — release notes
 
 Configuration & Secrets
 - Secrets and credentials are stored in `.env` for local runs. Recommended deployment practices:
@@ -61,9 +66,13 @@ Logging & Centralized Log Push
   - Logs should still be treated as sensitive — sanitize before pushing.
 
 Troubleshooting — Common Issues
-- Yahoo 429 (Too Many Requests): Add caching, throttle requests, or use an alternative paid quote API.
-- SmartAPI `placeOrder()` returns `None`: Verify credentials, product type (CNC/MIS), `symboltoken` mapping, and account permissions. Use the minimal order test script to print raw responses.
-- Accidental secret commit: Immediately rotate exposed tokens, remove file from history (`git filter-branch` or BFG), and force-push cleaned history.
+- **Authentication / TOTP:** Upgrade `pip install "smartapi-python>=1.5.5"`. Set `ANGEL_TOTP` or `ANGEL_TOTP_SECRET` in `.env`. Clear stale tokens: delete `.credentials.json`.
+- **SDK / shim conflict:** If login uses a stub, upgrade the official package; do not rely on `smartapi/smartConnect.py` for live trading.
+- **Angel One rate limit:** Reduce `target_stocks` or run fewer cycles per day; avoid hammering `holding()` in tight loops.
+- **Yahoo 429 (Too Many Requests):** Throttle runs; Nifty sentiment check may fail without blocking other logic.
+- **SmartAPI `placeOrder()` returns `None`:** Verify credentials, product type (CNC/MIS), `symboltoken` mapping, and account permissions.
+- **Accidental secret commit:** Rotate tokens immediately; remove from git history if needed.
+- **Live orders unintentionally:** Ensure `dry_run: true` in `config.json` or `DRY_RUN=true` in `.env`.
 
 Development & Documentation Workflow
 - Update `docs/CHANGELOG.md` for every meaningful change. Keep `docs/PROJECT_DOCUMENTATION.md` and `README.md` in sync.

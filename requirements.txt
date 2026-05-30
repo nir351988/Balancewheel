@@ -1,8 +1,11 @@
 # BalanceWheel Trading Bot - Python Dependencies
 # Python Version: 3.9+
 
-# Angel One SmartAPI Integration
-smartapi-python==1.3.0
+# Angel One SmartAPI Integration (>=1.5.5 required for TOTP login)
+smartapi-python>=1.5.5,<2.0.0
+
+# TOTP generation for Angel One 2FA (used by auth_manager.py)
+pyotp>=2.9.0
 
 # Data Processing & Analysis
 pandas==2.0.3

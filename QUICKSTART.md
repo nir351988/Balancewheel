@@ -19,6 +19,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 ### Step 2: Install Dependencies (2 min)
 ```bash
 pip install -r requirements.txt
+pip show smartapi-python   # must be >= 1.5.5 (TOTP login)
 ```
 
 ### Step 3: Configure Credentials (1 min)
@@ -27,13 +28,16 @@ cp .env.example .env
 # Edit .env with your Angel One credentials:
 # ANGEL_API_KEY=your_key
 # ANGEL_CLIENT_CODE=your_code
-# ANGEL_PASSWORD=your_password
+# ANGEL_PASSWORD=your_trading_pin
+# ANGEL_TOTP=your_totp_secret   # from enable-totp page
+# DRY_RUN=true
 nano .env
 ```
 
 ### Step 4: Test in Dry-Run (1 min)
 ```bash
-# Make sure dry_run: true in config.json
+# Ensure dry_run: true in config.json OR DRY_RUN=true in .env
+python dev_tools.py --test auth
 python balance_wheel.py
 ```
 
@@ -47,7 +51,8 @@ Authentication successful
 
 ### Step 5: Go Live!
 ```bash
-# Edit config.json: "dry_run": false
+# Only after docs/VERIFICATION.md checklist passes on a market day
+# Edit config.json: "dry_run": false  AND set DRY_RUN=false in .env
 python balance_wheel.py
 ```
 

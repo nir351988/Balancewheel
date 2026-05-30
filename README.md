@@ -1,8 +1,8 @@
 # BalanceWheel: Mean-Reversion & Smart Averaging Trading Bot
 
-**Version:** 1.0.0  
-**Platform:** Angel One (SmartAPI)  
-**Status:** Production Ready
+**Version:** 1.0.1  
+**Platform:** Angel One (SmartAPI) — requires `smartapi-python` >= 1.5.5 (TOTP)  
+**Status:** Production Ready (default: dry-run enabled)
 
 ---
 
@@ -173,6 +173,7 @@ venv\Scripts\activate
 
 ```bash
 pip install -r requirements.txt
+pip show smartapi-python   # must be 1.5.5 or higher for TOTP login
 ```
 
 ### Step 4: PythonAnywhere Specific Setup
@@ -242,7 +243,9 @@ Schedule: Every 15 minutes (market hours)
 ANGEL_API_KEY=your_api_key
 ANGEL_CLIENT_CODE=your_client_code
 ANGEL_PASSWORD=your_password
-ANGEL_TOTP=000000
+ANGEL_TOTP=your_totp_secret_or_6_digit_code
+# Or use ANGEL_TOTP_SECRET=... (pyotp generates codes automatically)
+DRY_RUN=true
 ```
 
 Update `balance_wheel.py` to load from env:
@@ -446,17 +449,23 @@ See [LOGGING.md](LOGGING.md) for complete log management guide, including:
 
 ## Troubleshooting
 
-### Issue: "Authentication failed"
+### Issue: "Authentication failed" or `unexpected keyword argument 'totp'`
 
-**Cause:** Invalid credentials or TOTP expired  
+**Cause:** Invalid credentials, expired TOTP, or outdated `smartapi-python` (< 1.5.5)  
 **Solution:**
 ```bash
-# Verify credentials in config.json
-# Check if TOTP is enabled on Angel One account
-# Try manual login on Angel One website
+pip install --upgrade "smartapi-python>=1.5.5"
+# Verify .env (preferred) or config.json credentials
+# Enable TOTP: https://smartapi.angelbroking.com/enable-totp
 # Clear cached credentials:
-rm .credentials.json
+rm .credentials.json   # Windows: del .credentials.json
+python dev_tools.py --test auth
 ```
+
+### Issue: Bot uses test stub instead of real Angel One API
+
+**Cause:** Official SDK not installed; local `smartapi/` shim used as fallback  
+**Solution:** Install/upgrade `smartapi-python>=1.5.5`. See [docs/VERIFICATION.md](docs/VERIFICATION.md).
 
 ### Issue: "Insufficient Funds"
 
@@ -618,7 +627,7 @@ This bot is provided as-is for educational and trading purposes. Use at your own
 
 **Disclaimer:** BalanceWheel is an automated trading tool. While it implements multiple safety mechanisms, **no algorithm can guarantee profits or prevent losses**. Past performance is not indicative of future results. Always understand your risk tolerance and investment goals before using automated trading systems.
 
-**Last Updated:** May 10, 2026  
+**Last Updated:** May 30, 2026  
 **Maintained By:** Senior Python Developer & FinTech Engineer
 
 ---
@@ -628,6 +637,7 @@ This bot is provided as-is for educational and trading purposes. Use at your own
 This repository includes a dedicated `docs/` folder with authoritative references and maintenance guidance. Keep these documents up to date whenever you change code, configuration, or logging behavior.
 
 - Project documentation: [docs/PROJECT_DOCUMENTATION.md](docs/PROJECT_DOCUMENTATION.md)
+- Verification & go-live: [docs/VERIFICATION.md](docs/VERIFICATION.md)
 - Changelog: [docs/CHANGELOG.md](docs/CHANGELOG.md)
 - Docs maintenance guide: [docs/DOCS_MAINTENANCE.md](docs/DOCS_MAINTENANCE.md)
 

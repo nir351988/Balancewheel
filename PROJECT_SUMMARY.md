@@ -4,9 +4,10 @@
 
 **BalanceWheel** is a production-ready, mean-reversion trading bot for Angel One's SmartAPI platform. It implements intelligent cost-averaging strategies to systematically lower portfolio average prices during market dips.
 
-**Status:** ✅ Complete & Production Ready  
-**Version:** 1.0.0  
-**Created:** May 10, 2026
+**Status:** ✅ Complete & Production Ready (dry-run default)  
+**Version:** 1.0.1  
+**Created:** May 10, 2026  
+**Last verified:** May 30, 2026
 
 ---
 
@@ -45,6 +46,8 @@ BalanceWheel/
 │   ├── README.md                  # Complete guide (500+ lines)
 │   ├── QUICKSTART.md              # 5-minute setup guide
 │   ├── DEPLOYMENT.md              # Deployment strategies
+│   ├── docs/VERIFICATION.md       # Pre-flight checks & known issues
+│   ├── docs/CHANGELOG.md          # Release history
 │   └── PROJECT_SUMMARY.md         # This file
 │
 ├── 📦 Deployment
@@ -274,7 +277,7 @@ sqlite3 data/balance_wheel.db \
 | Layer | Technology | Version |
 |-------|-----------|---------|
 | **Runtime** | Python | 3.9+ |
-| **Broker API** | SmartAPI Python | 1.3.0 |
+| **Broker API** | SmartAPI Python | >= 1.5.5 (TOTP) |
 | **Data Processing** | Pandas | 2.0.3 |
 | **Database** | SQLite | 3.x |
 | **HTTP** | Requests | 2.31.0 |

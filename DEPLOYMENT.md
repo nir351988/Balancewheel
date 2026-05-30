@@ -147,18 +147,19 @@ chmod +x ~/BalanceWheel/balance_wheel.py
 workon balance_wheel
 pip list | grep smartapi
 
-# Reinstall if needed
-pip install --upgrade smartapi-python
+# Reinstall if needed (>= 1.5.5 required for TOTP login)
+pip install --upgrade "smartapi-python>=1.5.5"
+pip show smartapi-python
 ```
 
-**Issue: Authentication fails**
+**Issue: Authentication fails or `unexpected keyword argument 'totp'`**
 ```bash
-# Test auth manually
-workon balance_wheel
-python -c "from auth_manager import AngelOneAuthManager; \
-auth = AngelOneAuthManager('KEY', 'CODE', 'PASS'); \
-success, msg = auth.authenticate(); print(msg)"
+# Upgrade SDK, set TOTP in .env, clear stale cache
+pip install --upgrade "smartapi-python>=1.5.5"
+rm .credentials.json
+python dev_tools.py --test auth
 ```
+See [docs/VERIFICATION.md](docs/VERIFICATION.md) for the full checklist.
 
 ---
 
