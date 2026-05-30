@@ -14,12 +14,15 @@ def get_smart_connect_class():
     try:
         from SmartApi.smartConnect import SmartConnect
     except ImportError as exc:
+        missing = str(exc).replace("No module named ", "").strip("'\"")
+        hint = (
+            f"Angel One SDK dependency missing ({missing}). "
+            "Run: pip install -r requirements-runtime.txt"
+        )
         if os.getenv("BALANCEWHEEL_USE_SMARTAPI_SHIM", "").strip().lower() in {"1", "true", "yes"}:
             from test_shims.smartapi_stub.smartConnect import SmartConnect
             return SmartConnect
-        raise ImportError(
-            "Angel One SDK not found. Install with: pip install 'smartapi-python>=1.5.5'"
-        ) from exc
+        raise ImportError(hint) from exc
 
     # Reject the offline stub if it was somehow loaded
     if getattr(SmartConnect.generateSession, "__module__", "").startswith("test_shims"):

@@ -12,7 +12,7 @@ This guide documents how to verify that credentials, APIs, and the trading engin
 
 1. Angel One account with SmartAPI enabled and [TOTP activated](https://smartapi.angelbroking.com/enable-totp).
 2. `.env` created from `.env.example` (never commit `.env`).
-3. Dependencies installed: `pip install -r requirements-runtime.txt` (PythonAnywhere / production) or `pip install -r requirements.txt` (full dev)
+3. Dependencies installed: `pip install -r requirements-runtime.txt` (PythonAnywhere / production) or `pip install -r requirements.txt` (full dev). If you see `No module named 'logzero'`, re-run that install (logzero is required by the Angel One SDK).
 4. Confirm SDK version: `pip show smartapi-python` → version **1.5.5 or higher**.
 
 **PythonAnywhere:** Use Python **3.10, 3.12, or 3.13** for `mkvirtualenv`. Avoid **3.11** if you see `No module named '_posixsubprocess'` (known broken symlink on some accounts).

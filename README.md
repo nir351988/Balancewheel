@@ -88,13 +88,12 @@ New Portfolio:
   New Average: (100 × 500 + 400 × 400) / 500 = ₹420
 ```
 
-### Latest Update: Real Portfolio Averaging
-The current implementation has been upgraded to use **actual holdings data** from Angel One rather than a fixed placeholder quantity.
+### Latest Update: Portfolio-first mode
+With **`analyze_holdings_only": true`** (default in `config.json`), each run analyzes **every stock in your demat**. The **`target_stocks`** watchlist is kept for sector labels and strategy reference—not as the scan list.
 
-- The bot now only evaluates stocks you currently hold in the portfolio.
-- Buy signals are generated based on the current position quantity and average price.
-- This makes it a true **portfolio averaging tool** rather than a broad fresh-buy engine.
-- It is designed to improve your existing positions, not to create new ones from zero.
+- Buy signals use your real quantity and average price from Angel One.
+- Holdings **not** on the watchlist (e.g. BAJAJFINSV) are still analyzed.
+- Watchlist rationale: [docs/TARGET_STOCKS.md](docs/TARGET_STOCKS.md).
 
 For a longer discussion of strategy tuning and professional improvement ideas, see [ENHANCEMENTS.md](ENHANCEMENTS.md).
 

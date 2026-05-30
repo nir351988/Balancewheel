@@ -3,6 +3,10 @@
 # Python: 3.9–3.13
 
 smartapi-python>=1.5.5,<2.0.0
+# smartapi-python does not always install these transitive deps on Python 3.13
+logzero>=1.7.0
+six>=1.16.0
+websocket-client>=1.6.0
 pyotp>=2.9.0
 requests>=2.31.0
 urllib3>=2.0.4

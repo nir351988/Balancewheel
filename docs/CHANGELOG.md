@@ -4,6 +4,18 @@ All notable changes to this project should be documented in this file. Follow Se
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-05-30
+
+### Fixed
+- Added `logzero`, `six`, and `websocket-client` to `requirements-runtime.txt` (SmartAPI import on Python 3.13 / PythonAnywhere).
+
+## [1.0.4] - 2026-05-30
+
+### Changed
+- **Portfolio-first mode:** `analyze_holdings_only: true` scans all demat holdings; `target_stocks` supplies metadata when symbols match.
+- Holdings API called once per cycle (cache); fewer rate-limit errors.
+- Added [TARGET_STOCKS.md](TARGET_STOCKS.md) explaining the 13-name watchlist.
+
 ## [1.0.3] - 2026-05-30
 
 ### Fixed

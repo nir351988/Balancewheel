@@ -254,12 +254,77 @@ class ObservationDatabase:
 
 
 # ==================== MARKET DATA MANAGER ====================
+def normalize_equity_symbol(tradingsymbol: str = "", symbol: str = "") -> str:
+    """Map Angel One holding symbols to config-style tickers (e.g. HCLTECH-EQ -> HCLTECH)."""
+    raw = (tradingsymbol or symbol or "").strip().upper()
+    if raw.endswith("-EQ"):
+        raw = raw[:-3]
+    return raw
+
+
 class MarketDataManager:
     """Fetches and manages market data from Angel One API."""
     
     def __init__(self, smartapi: SmartConnect, logger: logging.Logger):
         self.smartapi = smartapi
         self.logger = logger
+        self._holdings_cache: Optional[List[Dict]] = None
+
+    def clear_holdings_cache(self) -> None:
+        """Clear cached holdings (call at the start of each trading cycle)."""
+        self._holdings_cache = None
+
+    def _fetch_holdings_list(self) -> List[Dict]:
+        """Fetch raw holding rows from Angel One (single API round-trip)."""
+        holdings = self.smartapi.holding()
+        if not holdings or holdings.get("success") is False:
+            holdings = self.smartapi.allholding()
+        if not holdings or not holdings.get("data"):
+            return []
+        holdings_data = holdings["data"]
+        if isinstance(holdings_data, dict):
+            return (
+                holdings_data.get("holding")
+                or holdings_data.get("holdings")
+                or holdings_data.get("data")
+                or []
+            )
+        return holdings_data if isinstance(holdings_data, list) else []
+
+    def get_all_holdings(self) -> List[Dict]:
+        """
+        Return all demat equity holdings with normalized symbol, qty, and average price.
+        Results are cached until clear_holdings_cache() is called.
+        """
+        if self._holdings_cache is not None:
+            return self._holdings_cache
+
+        parsed: List[Dict] = []
+        for holding in self._fetch_holdings_list():
+            tradingsymbol = holding.get("tradingsymbol", "") or ""
+            symbol = normalize_equity_symbol(tradingsymbol, holding.get("symbol", ""))
+            if not symbol:
+                continue
+            quantity = int(float(holding.get("quantity", holding.get("qty", 0)) or 0))
+            if quantity <= 0:
+                continue
+            avg_price = float(holding.get("avgprice", holding.get("averageprice", 0)) or 0)
+            if avg_price <= 0:
+                continue
+            parsed.append(
+                {
+                    "symbol": symbol,
+                    "tradingsymbol": tradingsymbol,
+                    "quantity": quantity,
+                    "avg_price": avg_price,
+                    "ltp": float(holding.get("ltp", 0) or 0),
+                    "exchange": holding.get("exchange", "NSE") or "NSE",
+                }
+            )
+
+        self._holdings_cache = parsed
+        self.logger.info(f"Loaded {len(parsed)} portfolio holding(s) from demat")
+        return parsed
     
     def _lookup_symbol_token(self, symbol: str, exchange: str = "NSE") -> Tuple[Optional[str], Optional[str]]:
         """Look up exchange symbol token and tradingsymbol via Angel One searchScrip."""
@@ -403,35 +468,19 @@ class MarketDataManager:
             return None
     
     def get_portfolio_position(self, symbol: str) -> Optional[Dict[str, float]]:
-        """Fetch current holding quantity and average price for a symbol."""
+        """Fetch current holding quantity and average price for a symbol (uses holdings cache)."""
         try:
-            holdings = self.smartapi.holding()
-            if not holdings or holdings.get("success") is False:
-                holdings = self.smartapi.allholding()
-
-            if holdings and holdings.get("data"):
-                holdings_data = holdings["data"]
-                if isinstance(holdings_data, dict):
-                    holdings_list = (
-                        holdings_data.get("holding")
-                        or holdings_data.get("holdings")
-                        or holdings_data.get("data")
-                        or []
+            symbol_upper = symbol.upper()
+            for holding in self.get_all_holdings():
+                if holding["symbol"] == symbol_upper:
+                    self.logger.debug(
+                        f"Portfolio position for {symbol}: qty={holding['quantity']}, "
+                        f"avg_price={holding['avg_price']}"
                     )
-                else:
-                    holdings_list = holdings_data
-
-                for holding in holdings_list:
-                    symbol_match = holding.get("symbol", "").upper()
-                    trading_symbol = holding.get("tradingsymbol", "").upper()
-                    if symbol_match == symbol.upper() or trading_symbol == symbol.upper() or trading_symbol == f"{symbol.upper()}-EQ":
-                        avg_price = float(holding.get("avgprice", holding.get("averageprice", 0)) or 0)
-                        quantity = int(float(holding.get("quantity", holding.get("qty", 0)) or 0))
-                        self.logger.debug(
-                            f"Portfolio position for {symbol}: qty={quantity}, avg_price={avg_price}"
-                        )
-                        return {"quantity": quantity, "avg_price": avg_price}
-
+                    return {
+                        "quantity": holding["quantity"],
+                        "avg_price": holding["avg_price"],
+                    }
             self.logger.warning(f"No holdings found for {symbol}")
             return None
         except Exception as e:
@@ -498,35 +547,16 @@ class MarketDataManager:
             return None
 
     def get_holdings_value(self) -> float:
-        """Compute total market value of DMAT holdings."""
+        """Compute total market value of DMAT holdings (uses holdings cache)."""
         try:
-            holdings = self.smartapi.holding()
-            if not holdings or holdings.get("success") is False:
-                holdings = self.smartapi.allholding()
-
-            if holdings and holdings.get("data"):
-                holdings_data = holdings["data"]
-                if isinstance(holdings_data, dict):
-                    holdings_list = (
-                        holdings_data.get("holding")
-                        or holdings_data.get("holdings")
-                        or holdings_data.get("data")
-                        or []
-                    )
-                else:
-                    holdings_list = holdings_data
-
-                total_value = 0.0
-                for holding in holdings_list:
-                    qty = float(holding.get("quantity", 0) or 0)
-                    ltp = float(holding.get("ltp", 0) or 0)
-                    total_value += qty * ltp
-
-                self.logger.debug(f"Total holdings value: {total_value} INR")
-                return total_value
-
-            self.logger.warning("No holdings found when computing holdings value")
-            return 0.0
+            total_value = 0.0
+            for holding in self.get_all_holdings():
+                ltp = holding.get("ltp") or 0.0
+                if ltp <= 0:
+                    ltp = self.get_ltp(holding["symbol"], holding.get("exchange", "NSE")) or 0.0
+                total_value += holding["quantity"] * ltp
+            self.logger.debug(f"Total holdings value: {total_value} INR")
+            return total_value
         except Exception as e:
             self.logger.error(f"Error computing holdings value: {str(e)}")
             return 0.0
@@ -983,6 +1013,52 @@ class BalanceWheelBot:
             self.logger.error(f"Startup failed: {str(e)}", exc_info=True)
             return False
     
+    def _target_stocks_by_symbol(self) -> Dict[str, Dict]:
+        """Index target_stocks watchlist by symbol for metadata lookup."""
+        return {entry["symbol"].upper(): entry for entry in self.config.get("target_stocks", [])}
+
+    def _stock_metadata_for_holding(self, symbol: str, holding: Dict) -> Dict:
+        """
+        Build stock config for analysis: watchlist entry if listed, else portfolio defaults.
+        """
+        watchlist = self._target_stocks_by_symbol()
+        if symbol.upper() in watchlist:
+            stock = dict(watchlist[symbol.upper()])
+            stock["symbol"] = symbol.upper()
+            stock["on_watchlist"] = True
+            return stock
+        return {
+            "symbol": symbol.upper(),
+            "exchange": holding.get("exchange", "NSE"),
+            "sector": "Portfolio",
+            "category": "Holding",
+            "priority": 2,
+            "on_watchlist": False,
+        }
+
+    def _iter_cycle_stocks(self) -> List[Tuple[Dict, Dict]]:
+        """
+        Return (stock_metadata, position) pairs to analyze this cycle.
+        Default: all demat holdings. Legacy: target_stocks you actually hold.
+        """
+        analyze_holdings_only = self.config.get("analyze_holdings_only", True)
+        pairs: List[Tuple[Dict, Dict]] = []
+
+        if analyze_holdings_only:
+            for holding in self.market_data_manager.get_all_holdings():
+                symbol = holding["symbol"]
+                stock = self._stock_metadata_for_holding(symbol, holding)
+                position = {"quantity": holding["quantity"], "avg_price": holding["avg_price"]}
+                pairs.append((stock, position))
+            return pairs
+
+        for stock in self.config.get("target_stocks", []):
+            symbol = stock["symbol"]
+            position = self.market_data_manager.get_portfolio_position(symbol)
+            if position and position.get("quantity", 0) > 0:
+                pairs.append((stock, position))
+        return pairs
+
     def run_cycle(self) -> None:
         """Run a single trading cycle."""
         if not self.engine:
@@ -992,35 +1068,37 @@ class BalanceWheelBot:
         try:
             self.logger.info("-" * 80)
             self.logger.info(f"Starting trading cycle at {datetime.now()}")
-            
-            stocks = self.config["target_stocks"]
+            self.market_data_manager.clear_holdings_cache()
+
+            if self.config.get("analyze_holdings_only", True):
+                watchlist_count = len(self.config.get("target_stocks", []))
+                self.logger.info(
+                    f"Portfolio mode: analyzing demat holdings only "
+                    f"(watchlist has {watchlist_count} names for sector/metadata reference)"
+                )
+
             cycle_results = []
             
-            for stock in stocks:
+            for stock, position in self._iter_cycle_stocks():
+                symbol = stock["symbol"]
                 try:
-                    symbol = stock["symbol"]
                     self.logger.debug(f"Analyzing {symbol}...")
                     
-                    # Fetch market data
-                    ltp = self.market_data_manager.get_ltp(symbol)
-                    position = self.market_data_manager.get_portfolio_position(symbol)
-
-                    if not ltp or not position or position.get("quantity", 0) <= 0 or position.get("avg_price") is None:
-                        self.logger.warning(f"Skipping {symbol}: missing market data or no current holding")
+                    ltp = self.market_data_manager.get_ltp(symbol, stock.get("exchange", "NSE"))
+                    if not ltp:
+                        self.logger.warning(f"Skipping {symbol}: could not fetch LTP")
                         continue
 
                     avg_price = position["avg_price"]
                     current_qty = position["quantity"]
 
-                    # Analyze stock
                     analysis = self.engine.analyze_stock(stock, ltp, avg_price, current_qty)
                     cycle_results.append(analysis)
                     
-                    # Log observation
                     self.db_manager.log_observation(analysis)
-                    self.logger.info(f"[{analysis.action}] {symbol}: {analysis.reason}")
+                    watchlist_note = " [watchlist]" if stock.get("on_watchlist") else " [portfolio only]"
+                    self.logger.info(f"[{analysis.action}] {symbol}{watchlist_note}: {analysis.reason}")
                     
-                    # Execute if BUY action
                     if analysis.action == "BUY":
                         can_exec, adjusted_qty, exec_reason = self.engine.check_execution_constraints(
                             symbol, stock["sector"], analysis.shares_to_buy, ltp
@@ -1037,7 +1115,7 @@ class BalanceWheelBot:
                 except Exception as e:
                     self.logger.error(f"Error processing {symbol}: {str(e)}", exc_info=True)
             
-            self.logger.info(f"Trading cycle completed. Processed {len(cycle_results)} stocks.")
+            self.logger.info(f"Trading cycle completed. Processed {len(cycle_results)} holding(s).")
             self.logger.info("-" * 80)
         
         except Exception as e:
