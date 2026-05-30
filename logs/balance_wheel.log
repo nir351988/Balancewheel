@@ -253,3 +253,39 @@
 2026-05-30 03:14:13 UTC - BalanceWheel - INFO - [shutdown:1106] - ================================================================================
 2026-05-30 03:14:13 UTC - BalanceWheel - INFO - [_push_logs_to_github:1094] - Git command successful: git config
 2026-05-30 03:14:13 UTC - BalanceWheel - INFO - [_push_logs_to_github:1094] - Git command successful: git config
+2026-05-30 03:14:13 UTC - BalanceWheel - INFO - [_push_logs_to_github:1094] - Git command successful: git add
+2026-05-30 03:14:13 UTC - BalanceWheel - INFO - [_push_logs_to_github:1094] - Git command successful: git commit
+2026-05-30 03:14:14 UTC - BalanceWheel - INFO - [_push_logs_to_github:1094] - Git command successful: git push
+2026-05-30 03:32:13 UTC - BalanceWheel - INFO - [__init__:889] - ================================================================================
+2026-05-30 03:32:13 UTC - BalanceWheel - INFO - [__init__:890] - BalanceWheel Bot Initialized - BalanceWheel v1.0.4
+2026-05-30 03:32:13 UTC - BalanceWheel - INFO - [__init__:891] - Dry Run Mode: True
+2026-05-30 03:32:13 UTC - BalanceWheel - INFO - [__init__:894] - Repository configured from env: https://github.com/nir351988/Balancewheel.git
+2026-05-30 03:32:13 UTC - BalanceWheel - INFO - [__init__:896] - GitHub token loaded from environment (hidden)
+2026-05-30 03:32:13 UTC - BalanceWheel - INFO - [__init__:897] - ================================================================================
+2026-05-30 03:32:13 UTC - BalanceWheel - INFO - [startup:981] - Starting up BalanceWheel bot...
+2026-05-30 03:32:15 UTC - BalanceWheel - INFO - [startup:988] - Authentication successful: Fresh authentication successful
+2026-05-30 03:32:15 UTC - BalanceWheel - INFO - [_init_db:150] - Database initialized: data/balance_wheel.db
+2026-05-30 03:32:15 UTC - BalanceWheel - INFO - [startup:1009] - Bot startup completed successfully!
+2026-05-30 03:32:15 UTC - BalanceWheel - INFO - [run_cycle:1069] - --------------------------------------------------------------------------------
+2026-05-30 03:32:15 UTC - BalanceWheel - INFO - [run_cycle:1070] - Starting trading cycle at 2026-05-30 03:32:15.421328
+2026-05-30 03:32:15 UTC - BalanceWheel - INFO - [run_cycle:1075] - Portfolio mode: analyzing demat holdings only (watchlist has 13 names for sector/metadata reference)
+2026-05-30 03:32:16 UTC - BalanceWheel - INFO - [get_all_holdings:326] - Loaded 3 portfolio holding(s) from demat
+2026-05-30 03:32:17 UTC - BalanceWheel - INFO - [run_cycle:1100] - [BUY] HCLTECH [watchlist]: Price dip 20.94% >= 15%. Buy 25 shares to move avg toward 5% buffer above LTP.
+2026-05-30 03:32:20 UTC - BalanceWheel - ERROR - [get_nifty_50_change_percent:605] - Error fetching Nifty 50 data: 429 Client Error: Too Many Requests for url: https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI
+2026-05-30 03:32:20 UTC - BalanceWheel - INFO - [execute_buy_order:825] - [DRY RUN] Would place order: HCLTECH x2 @ 1183.8 = 2367.60 INR
+2026-05-30 03:32:20 UTC - BalanceWheel - INFO - [run_cycle:1111] - Execution result: DRY RUN: HCLTECH x2 @ 1183.8
+2026-05-30 03:32:22 UTC - BalanceWheel - INFO - [run_cycle:1100] - [BUY] BAJAJFINSV [portfolio only]: Price dip 15.51% >= 15%. Buy 2 shares to move avg toward 5% buffer above LTP.
+2026-05-30 03:32:25 UTC - BalanceWheel - ERROR - [get_nifty_50_change_percent:605] - Error fetching Nifty 50 data: 429 Client Error: Too Many Requests for url: https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI
+2026-05-30 03:32:25 UTC - BalanceWheel - INFO - [execute_buy_order:825] - [DRY RUN] Would place order: BAJAJFINSV x2 @ 1783.6 = 3567.20 INR
+2026-05-30 03:32:25 UTC - BalanceWheel - INFO - [run_cycle:1111] - Execution result: DRY RUN: BAJAJFINSV x2 @ 1783.6
+2026-05-30 03:32:27 UTC - BalanceWheel - INFO - [run_cycle:1100] - [BUY] HDFCBANK [watchlist]: Price dip 20.24% >= 15%. Buy 28 shares to move avg toward 5% buffer above LTP.
+2026-05-30 03:32:29 UTC - BalanceWheel - ERROR - [get_nifty_50_change_percent:605] - Error fetching Nifty 50 data: 429 Client Error: Too Many Requests for url: https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI
+2026-05-30 03:32:29 UTC - BalanceWheel - INFO - [execute_buy_order:825] - [DRY RUN] Would place order: HDFCBANK x3 @ 744.55 = 2233.65 INR
+2026-05-30 03:32:29 UTC - BalanceWheel - INFO - [run_cycle:1111] - Execution result: DRY RUN: HDFCBANK x3 @ 744.55
+2026-05-30 03:32:29 UTC - BalanceWheel - INFO - [run_cycle:1118] - Trading cycle completed. Processed 3 holding(s).
+2026-05-30 03:32:29 UTC - BalanceWheel - INFO - [run_cycle:1119] - --------------------------------------------------------------------------------
+2026-05-30 03:32:29 UTC - BalanceWheel - INFO - [shutdown:1177] - ================================================================================
+2026-05-30 03:32:29 UTC - BalanceWheel - INFO - [shutdown:1178] - BalanceWheel Bot shutting down: Trading cycle completed
+2026-05-30 03:32:29 UTC - BalanceWheel - INFO - [shutdown:1179] - ================================================================================
+2026-05-30 03:32:29 UTC - BalanceWheel - INFO - [_push_logs_to_github:1167] - Git command successful: git config
+2026-05-30 03:32:29 UTC - BalanceWheel - INFO - [_push_logs_to_github:1167] - Git command successful: git config
