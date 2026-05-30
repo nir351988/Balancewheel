@@ -82,7 +82,7 @@ python balance_wheel.py
 
 2. **Create Virtual Environment**
    ```
-   mkvirtualenv --python=/usr/bin/python3.9 balance_wheel
+   mkvirtualenv --python=/usr/bin/python3.10 balance_wheel
    pip install -r requirements.txt
    ```
 

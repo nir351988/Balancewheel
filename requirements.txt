@@ -1,19 +1,18 @@
 # BalanceWheel Trading Bot - Python Dependencies
-# Python Version: 3.9+
+# Python Version: 3.9+ (3.13: use requirements-runtime.txt on PythonAnywhere)
+#
+# Production / PythonAnywhere (recommended):
+#   pip install -r requirements-runtime.txt
+#
+# Full dev install (local CI, tests, lint):
+#   pip install -r requirements.txt
 
-# Angel One SmartAPI Integration (>=1.5.5 required for TOTP login)
-smartapi-python>=1.5.5,<2.0.0
+-r requirements-runtime.txt
 
-# TOTP generation for Angel One 2FA (used by auth_manager.py)
-pyotp>=2.9.0
-
-# Data Processing & Analysis
-pandas==2.0.3
-numpy==1.24.3
-
-# HTTP & API Communication
-requests==2.31.0
-urllib3==2.0.4
+# Data Processing (optional; not imported by balance_wheel.py)
+# Pin flexible versions for Python 3.13 wheels
+pandas>=2.2.0,<3.0
+numpy>=1.26.0,<3.0
 
 # Scheduling (for PythonAnywhere cron jobs)
 APScheduler==3.10.4

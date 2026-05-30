@@ -18,7 +18,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 # Third-party imports (install via requirements.txt)
-import pandas as pd
 import requests
 try:
     # Prefer the installed SmartApi package when available

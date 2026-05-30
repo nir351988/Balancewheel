@@ -185,9 +185,12 @@ class DevTools:
         # Required packages
         logger.info("\nChecking dependencies:")
         required = [
-            "pandas",
             "requests",
             "SmartApi",
+            "pyotp",
+        ]
+        optional = [
+            "pandas",
         ]
         
         missing = []
@@ -198,6 +201,13 @@ class DevTools:
             except ImportError:
                 logger.warning(f"  ✗ {package} - NOT INSTALLED")
                 missing.append(package)
+
+        for package in optional:
+            try:
+                __import__(package)
+                logger.info(f"  ✓ {package} (optional)")
+            except ImportError:
+                logger.info(f"  ○ {package} (optional, not installed)")
         
         # Directories
         logger.info("\nChecking directories:")
@@ -212,7 +222,7 @@ class DevTools:
         
         if missing:
             logger.warning(f"\n⚠ Missing packages: {', '.join(missing)}")
-            logger.info("  Run: pip install -r requirements.txt")
+            logger.info("  Run: pip install -r requirements-runtime.txt")
             return False
         
         logger.info("\n✓ ENVIRONMENT OK")

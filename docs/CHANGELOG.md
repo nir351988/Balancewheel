@@ -4,6 +4,15 @@ All notable changes to this project should be documented in this file. Follow Se
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-05-30
+
+### Fixed
+- Python 3.13 / PythonAnywhere: removed unused `pandas` import; added `requirements-runtime.txt` without pandas/numpy build issues.
+- `dev_tools` environment check uses runtime deps (`requests`, `SmartApi`, `pyotp`).
+
+### Changed
+- `requirements.txt` includes runtime file; pandas/numpy optional with flexible pins for dev only.
+
 ## [1.0.1] - 2026-05-30
 
 ### Changed

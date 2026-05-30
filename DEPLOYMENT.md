@@ -57,8 +57,12 @@ cd BalanceWheel
 #### 2. Create Virtual Environment (2 min)
 
 ```bash
-mkvirtualenv --python=/usr/bin/python3.11 balance_wheel
-pip install -r requirements.txt
+# Use 3.10, 3.12, or 3.13 — avoid 3.11 on PythonAnywhere (broken _posixsubprocess on some accounts)
+mkvirtualenv --python=/usr/bin/python3.10 balance_wheel
+workon balance_wheel
+pip install --upgrade pip setuptools wheel
+pip install -r requirements-runtime.txt
+pip show smartapi-python   # must be >= 1.5.5
 ```
 
 #### 3. Configure Credentials (2 min)
@@ -139,6 +143,23 @@ grep ERROR ~/BalanceWheel/logs/balance_wheel.log
 
 # Verify permissions
 chmod +x ~/BalanceWheel/balance_wheel.py
+```
+
+**Issue: `ModuleNotFoundError: No module named '_posixsubprocess'`**
+
+**Cause:** Python 3.11 on PythonAnywhere is sometimes symlinked to an incomplete install (`/usr/local/bin/python3.11`).
+
+**Fix:** Delete the venv and recreate with 3.10, 3.12, or 3.13:
+```bash
+deactivate
+rmvirtualenv balance_wheel
+# optional: clear virtualenv wheel cache
+rm -rf ~/.local/share/virtualenv/wheel/*
+mkvirtualenv --python=/usr/bin/python3.10 balance_wheel
+workon balance_wheel
+python -c "import _posixsubprocess; print('Python OK')"
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
 **Issue: "Module not found"**
