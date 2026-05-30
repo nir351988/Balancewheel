@@ -10,6 +10,7 @@ Usage:
     python dev_tools.py --check-db
 """
 
+import os
 import sys
 import json
 import sqlite3
@@ -18,6 +19,11 @@ import logging
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List
+
+from dotenv import load_dotenv
+
+# Load .env from project root (same as balance_wheel.py)
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 
 # Setup logging
 logging.basicConfig(
@@ -36,11 +42,14 @@ class DevTools:
         self.load_config()
     
     def load_config(self) -> bool:
-        """Load configuration file."""
+        """Load configuration file and merge .env overrides (same as BalanceWheelBot)."""
         try:
             with open(self.config_file, 'r') as f:
-                self.config = json.load(f)
-            logger.info(f"✓ Config loaded: {self.config_file}")
+                raw = json.load(f)
+            from balance_wheel import BalanceWheelBot
+
+            self.config = BalanceWheelBot.__new__(BalanceWheelBot)._apply_env_overrides(raw)
+            logger.info(f"✓ Config loaded: {self.config_file} (with .env overrides)")
             return True
         except FileNotFoundError:
             logger.error(f"✗ Config file not found: {self.config_file}")
@@ -78,11 +87,16 @@ class DevTools:
             for key in ["api_key", "client_code", "password"]:
                 if key in broker:
                     value = broker[key]
-                    if value.startswith("YOUR_"):
-                        errors.append(f"Broker {key} not configured")
+                    if not value or str(value).startswith("YOUR_"):
+                        errors.append(f"Broker {key} not configured (.env or config.json)")
                         logger.warning(f"  ⚠ {key}: NOT SET")
                     else:
-                        logger.info(f"  ✓ {key}: **configured**")
+                        logger.info(f"  ✓ {key}: configured (via .env or config)")
+            if os.getenv("ANGEL_TOTP_SECRET") or os.getenv("ANGEL_TOTP"):
+                logger.info("  ✓ TOTP: configured via .env")
+            elif broker.get("totp", "000000") == "000000":
+                errors.append("TOTP not configured")
+                logger.warning("  ⚠ totp: NOT SET")
         
         # Check trading rules
         logger.info("\n[3] Trading Rules:")
@@ -143,9 +157,16 @@ class DevTools:
             from auth_manager import AngelOneAuthManager
             
             broker = self.config["broker"]
-            logger.info(f"\nAttempting authentication...")
-            logger.info(f"  Client: {broker['client_code']}")
-            
+            if broker.get("api_key", "").startswith("YOUR_") or broker.get("client_code", "").startswith("YOUR_"):
+                logger.error(
+                    "Broker credentials still placeholders — check .env in ~/BalanceWheel "
+                    "(ANGEL_API_KEY, ANGEL_CLIENT_CODE, ANGEL_PIN, ANGEL_TOTP_SECRET)"
+                )
+                return False
+
+            logger.info("\nAttempting authentication...")
+            logger.info(f"  Client: {broker['client_code'][:2]}*** (from .env)")
+
             auth = AngelOneAuthManager(
                 api_key=broker["api_key"],
                 client_code=broker["client_code"],

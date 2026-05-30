@@ -4,6 +4,11 @@ All notable changes to this project should be documented in this file. Follow Se
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-05-30
+
+### Fixed
+- `dev_tools.py` now loads `.env` and applies the same overrides as `BalanceWheelBot` (fixes auth test using `YOUR_*` placeholders).
+
 ## [1.0.6] - 2026-05-30
 
 ### Changed
