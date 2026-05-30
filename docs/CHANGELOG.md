@@ -4,6 +4,13 @@ All notable changes to this project should be documented in this file. Follow Se
 
 ## [Unreleased]
 
+## [1.0.9] - 2026-05-30
+
+### Added
+- **DMAT account snapshot** at startup: cash, holdings table, total value (works outside market hours).
+- `python balance_wheel.py --account` and `python dev_tools.py --test account` for connection-only checks.
+- Config: `startup_show_account` (default true).
+
 ## [1.0.8] - 2026-05-30
 
 ### Fixed

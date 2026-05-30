@@ -143,6 +143,26 @@ class DevTools:
             logger.info("✓ VALIDATION PASSED")
             return True
     
+    def test_account(self) -> bool:
+        """Show demat balance and holdings (works outside market hours)."""
+        logger.info("\n" + "=" * 60)
+        logger.info("DMAT ACCOUNT CHECK")
+        logger.info("=" * 60)
+
+        try:
+            from balance_wheel import BalanceWheelBot
+
+            bot = BalanceWheelBot(self.config_file)
+            if not bot.startup():
+                logger.error("Startup failed — cannot fetch account")
+                return False
+            ok = bot.log_dmat_account_summary()
+            bot.shutdown("Account check done")
+            return ok
+        except Exception as e:
+            logger.error(f"Account check failed: {e}")
+            return False
+
     def test_auth(self) -> bool:
         """Test Angel One authentication."""
         logger.info("\n" + "="*60)
@@ -397,10 +417,11 @@ class DevTools:
             "logs": self.check_logs,
             "auth": self.test_auth,
             "dry-run": self.test_dry_run,
+            "account": self.test_account,
         }
         
         if test_name == "all":
-            test_keys = ["environment", "config", "database", "logs", "auth"]
+            test_keys = ["environment", "config", "database", "logs", "auth", "account"]
         else:
             test_keys = [test_name] if test_name in tests else []
         
@@ -441,7 +462,7 @@ def main():
     
     parser.add_argument(
         "--test",
-        choices=["all", "environment", "config", "database", "logs", "auth", "dry-run"],
+        choices=["all", "environment", "config", "database", "logs", "auth", "account", "dry-run"],
         default="all",
         help="Test to run (default: all)"
     )

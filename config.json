@@ -1,8 +1,9 @@
 {
   "app_name": "BalanceWheel",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "dry_run": false,
   "analyze_holdings_only": true,
+  "startup_show_account": true,
   "order_settings": {
     "variety": "NORMAL",
     "ordertype": "LIMIT",

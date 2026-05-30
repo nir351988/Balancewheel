@@ -524,6 +524,11 @@ class MarketDataManager:
 
     def get_available_balance(self) -> Optional[float]:
         """Get available DMAT funds."""
+        cash, _ = self._get_available_balance_with_source()
+        return cash
+
+    def _get_available_balance_with_source(self) -> Tuple[Optional[float], Optional[str]]:
+        """Get available cash and which API field provided it."""
         try:
             profile = None
             refresh_token = getattr(self.smartapi, "refresh_token", None)
@@ -543,38 +548,78 @@ class MarketDataManager:
                     self.logger.debug(f"getProfile(None) failed: {e}")
 
             if profile:
-                self.logger.debug(f"Profile response object: {profile}")
                 if profile.get("status") is True and isinstance(profile.get("data"), dict):
                     data = profile["data"]
                     for key in ["cash", "cashbalance", "availablecash", "available_cash", "netcash", "net_cash"]:
                         if key in data and data[key] is not None:
                             try:
                                 cash = float(data[key])
-                                self.logger.debug(f"Available balance from profile {key}: {cash} INR")
-                                return cash
+                                return cash, f"profile.{key}"
                             except (TypeError, ValueError):
                                 continue
-                else:
-                    self.logger.warning(f"Profile response returned no usable data: {profile}")
 
             rms_data = self.smartapi.rmsLimit()
             self.logger.debug(f"rmsLimit response: {rms_data}")
             if rms_data and rms_data.get("data"):
                 data = rms_data["data"]
-                for key in ["availablecash", "availableMargin", "availablemargin", "netcash", "net", "cash"]:
+                for key in [
+                    "availablecash",
+                    "availableMargin",
+                    "availablemargin",
+                    "net",
+                    "netcash",
+                    "cash",
+                ]:
                     if key in data and data[key] is not None:
                         try:
                             cash = float(data[key])
-                            self.logger.debug(f"Available balance from RMS data {key}: {cash} INR")
-                            return cash
+                            return cash, f"rmsLimit.{key}"
                         except (TypeError, ValueError):
                             continue
 
-            self.logger.warning("Failed to fetch available balance")
-            return None
+            return None, None
         except Exception as e:
             self.logger.error(f"Error fetching available balance: {str(e)}")
-            return None
+            return None, None
+
+    def get_dmat_account_snapshot(self) -> Dict:
+        """
+        Fetch demat cash + holdings summary. Works outside market hours
+        (holdings and RMS/profile; LTP may be last close from holdings API).
+        """
+        self.clear_holdings_cache()
+        cash, cash_source = self._get_available_balance_with_source()
+        holdings = self.get_all_holdings()
+
+        holding_rows = []
+        holdings_value = 0.0
+        for h in holdings:
+            ltp = float(h.get("ltp") or 0)
+            if ltp <= 0:
+                ltp = float(h.get("avg_price") or 0)
+            value = h["quantity"] * ltp
+            holdings_value += value
+            holding_rows.append(
+                {
+                    "symbol": h["symbol"],
+                    "tradingsymbol": h.get("tradingsymbol", ""),
+                    "quantity": h["quantity"],
+                    "avg_price": h["avg_price"],
+                    "ltp": ltp,
+                    "value_inr": value,
+                }
+            )
+
+        total = (cash if cash is not None else 0.0) + holdings_value
+        return {
+            "cash_inr": cash,
+            "cash_source": cash_source,
+            "holdings_count": len(holding_rows),
+            "holdings_value_inr": holdings_value,
+            "total_dmat_inr": total,
+            "holdings": holding_rows,
+            "connection_ok": cash is not None or len(holding_rows) > 0,
+        }
 
     def get_holdings_value(self) -> float:
         """Compute total market value of DMAT holdings (uses holdings cache)."""
@@ -1062,6 +1107,9 @@ class BalanceWheelBot:
                 self.market_data_manager,
                 self.logger
             )
+
+            if self.config.get("startup_show_account", True):
+                self.log_dmat_account_summary()
             
             self.logger.info("Bot startup completed successfully!")
             return True
@@ -1070,6 +1118,55 @@ class BalanceWheelBot:
             self.logger.error(f"Startup failed: {str(e)}", exc_info=True)
             return False
     
+    def log_dmat_account_summary(self) -> bool:
+        """
+        Log demat balance and holdings so API/auth can be verified any time.
+        Returns True if Angel One returned usable account data.
+        """
+        if not self.market_data_manager:
+            self.logger.error("Market data manager not initialized")
+            return False
+
+        snap = self.market_data_manager.get_dmat_account_snapshot()
+        client = self.config.get("broker", {}).get("client_code", "")
+        client_display = f"{str(client)[:2]}***" if client and not str(client).startswith("YOUR_") else "unknown"
+
+        self.logger.info("=" * 80)
+        self.logger.info("DMAT ACCOUNT SNAPSHOT (Angel One)")
+        self.logger.info("=" * 80)
+        self.logger.info(f"Client: {client_display}")
+        self.logger.info(f"Mode: {'DRY RUN' if self.is_dry_run() else 'LIVE PRODUCTION'}")
+
+        if snap["cash_inr"] is not None:
+            src = f" [{snap['cash_source']}]" if snap.get("cash_source") else ""
+            self.logger.info(f"Available cash / margin (INR): {snap['cash_inr']:,.2f}{src}")
+        else:
+            self.logger.warning("Available cash / margin: unavailable from API")
+
+        self.logger.info(
+            f"Holdings: {snap['holdings_count']} position(s), "
+            f"market value (INR): {snap['holdings_value_inr']:,.2f}"
+        )
+        self.logger.info(f"Total DMAT estimate (cash + holdings) (INR): {snap['total_dmat_inr']:,.2f}")
+
+        if snap["holdings"]:
+            self.logger.info("-" * 80)
+            self.logger.info(f"{'Symbol':<14} {'Qty':>6} {'Avg':>10} {'LTP*':>10} {'Value':>12}")
+            for row in sorted(snap["holdings"], key=lambda x: x["symbol"]):
+                self.logger.info(
+                    f"{row['symbol']:<14} {row['quantity']:>6} "
+                    f"{row['avg_price']:>10.2f} {row['ltp']:>10.2f} {row['value_inr']:>12.2f}"
+                )
+            self.logger.info("* LTP from holdings API (last price; may be close when market is shut)")
+
+        if snap["connection_ok"]:
+            self.logger.info("Angel One account API: OK (auth + data)")
+        else:
+            self.logger.error("Angel One account API: no cash or holdings returned — check tokens / .env")
+
+        self.logger.info("=" * 80)
+        return bool(snap["connection_ok"])
+
     def _target_stocks_by_symbol(self) -> Dict[str, Dict]:
         """Index target_stocks watchlist by symbol for metadata lookup."""
         return {entry["symbol"].upper(): entry for entry in self.config.get("target_stocks", [])}
@@ -1244,11 +1341,18 @@ class BalanceWheelBot:
 # ==================== MAIN ENTRY POINT ====================
 def main():
     """Main entry point for the bot."""
+    import sys
+
+    account_only = "--account" in sys.argv or "--status" in sys.argv
     bot = BalanceWheelBot(config_file="config.json")
     
     try:
         if not bot.startup():
             bot.shutdown("Startup failed")
+            return
+
+        if account_only:
+            bot.shutdown("Account snapshot completed")
             return
         
         # Run a single cycle (can be scheduled with APScheduler for PythonAnywhere)

@@ -30,8 +30,12 @@ python dev_tools.py --test environment
 python dev_tools.py --test config
 python dev_tools.py --test auth
 
-# 3. Full dry-run cycle (recommended before live trading)
-# Production (default):
+# 3. DMAT balance + holdings (any time — best connection check)
+python dev_tools.py --test account
+# or:
+python balance_wheel.py --account
+
+# 4. Full trading cycle
 python balance_wheel.py
 
 # Dry-run only when testing:
