@@ -888,7 +888,12 @@ class BalanceWheelBot:
         
         self.logger.info("=" * 80)
         self.logger.info(f"BalanceWheel Bot Initialized - {self.config['app_name']} v{self.config['version']}")
-        self.logger.info(f"Dry Run Mode: {self.config.get('dry_run', False)}")
+        if self.is_dry_run():
+            self.logger.warning("DRY RUN MODE — no real orders will be placed (set DRY_RUN=false to trade live)")
+        else:
+            self.logger.warning(
+                "LIVE PRODUCTION MODE — real BUY orders will be sent to Angel One when signals fire"
+            )
         github_repo = self.config.get("github_repo")
         if github_repo:
             self.logger.info(f"Repository configured from env: {github_repo}")
@@ -942,8 +947,13 @@ class BalanceWheelBot:
 
         config["broker"] = broker_config
 
+        # Production by default. Opt into dry-run only when DRY_RUN or PAPER_TRADING is set in .env
         if os.getenv("DRY_RUN") is not None:
             config["dry_run"] = os.getenv("DRY_RUN").strip().lower() in {"1", "true", "yes"}
+        elif os.getenv("PAPER_TRADING") is not None:
+            config["dry_run"] = os.getenv("PAPER_TRADING").strip().lower() in {"1", "true", "yes"}
+        else:
+            config["dry_run"] = bool(config.get("dry_run", False))
 
         if os.getenv("PAPER_TRADING") is not None:
             config["paper_trading"] = os.getenv("PAPER_TRADING").strip().lower() in {"1", "true", "yes"}
@@ -963,6 +973,10 @@ class BalanceWheelBot:
             config["github_token"] = github_token
 
         return config
+
+    def is_dry_run(self) -> bool:
+        """True only when dry-run is explicitly enabled (config or DRY_RUN/PAPER_TRADING env)."""
+        return bool(self.config.get("dry_run", False))
 
     def _init_auth(self) -> AngelOneAuthManager:
         """Initialize Angel One authentication."""

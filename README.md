@@ -2,7 +2,7 @@
 
 **Version:** 1.0.1  
 **Platform:** Angel One (SmartAPI) — requires `smartapi-python` >= 1.5.5 (TOTP)  
-**Status:** Production Ready (default: dry-run enabled)
+**Status:** Production Ready (default: **live trading**; dry-run opt-in via `DRY_RUN=true`)
 
 ---
 
@@ -199,7 +199,7 @@ Schedule: Every 15 minutes (market hours)
 {
   "app_name": "BalanceWheel",
   "version": "1.0.0",
-  "dry_run": true,  // ⚠️ Set to false for LIVE trading
+  "dry_run": false,  // Production default. For testing: true or DRY_RUN=true in .env
   
   "broker": {
     "platform": "Angel One",
@@ -244,7 +244,7 @@ ANGEL_CLIENT_CODE=your_client_code
 ANGEL_PASSWORD=your_password
 ANGEL_TOTP=your_totp_secret_or_6_digit_code
 # Or use ANGEL_TOTP_SECRET=... (pyotp generates codes automatically)
-DRY_RUN=true
+# DRY_RUN=true   # Uncomment only for manual dry-run tests
 ```
 
 Update `balance_wheel.py` to load from env:
@@ -269,11 +269,12 @@ Use Python's `cryptography` library to encrypt sensitive data.
 
 ### Running the Bot
 
-**Dry-Run Mode (Recommended First)**
+**Dry-Run Mode (manual / agent testing only)**
 
 ```bash
-# Edit config.json: "dry_run": true
-python balance_wheel.py
+# One-off test: DRY_RUN=true python balance_wheel.py
+# Or set "dry_run": true in config.json temporarily
+DRY_RUN=true python balance_wheel.py
 ```
 
 Expected output:
@@ -283,12 +284,14 @@ Expected output:
 2026-05-10 09:30:05 - BalanceWheel - INFO - [DRY RUN] Would place order: TCS x150 @ 3400 = 510000.00 INR
 ```
 
-**Live Trading Mode**
+**Production mode (default)**
 
 ```bash
-# Edit config.json: "dry_run": false
+# Ensure DRY_RUN is not set to true in .env
 python balance_wheel.py
 ```
+
+Logs must show: `LIVE PRODUCTION MODE — real BUY orders will be sent to Angel One`.
 
 ### Scheduling on PythonAnywhere
 

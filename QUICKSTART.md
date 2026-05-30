@@ -30,15 +30,19 @@ cp .env.example .env
 # ANGEL_CLIENT_CODE=your_code
 # ANGEL_PASSWORD=your_trading_pin
 # ANGEL_TOTP=your_totp_secret   # from enable-totp page
-# DRY_RUN=true
+# Leave DRY_RUN unset for production (default)
 nano .env
 ```
 
-### Step 4: Test in Dry-Run (1 min)
+### Step 4: Verify auth, then run (1 min)
 ```bash
-# Ensure dry_run: true in config.json OR DRY_RUN=true in .env
 python dev_tools.py --test auth
-python balance_wheel.py
+python balance_wheel.py   # LIVE by default — places real orders when BUY fires
+```
+
+Optional dry-run test:
+```bash
+DRY_RUN=true python balance_wheel.py
 ```
 
 Expected output:
@@ -49,10 +53,10 @@ Authentication successful
 [DRY RUN] Would place order: TCS x150 @ 3400
 ```
 
-### Step 5: Go Live!
+### Step 5: Production scheduling
 ```bash
-# Only after docs/VERIFICATION.md checklist passes on a market day
-# Edit config.json: "dry_run": false  AND set DRY_RUN=false in .env
+# Default is live. Confirm .env does NOT have DRY_RUN=true
+grep -E "DRY_RUN|PAPER" .env || true
 python balance_wheel.py
 ```
 

@@ -31,8 +31,11 @@ python dev_tools.py --test config
 python dev_tools.py --test auth
 
 # 3. Full dry-run cycle (recommended before live trading)
-# Set DRY_RUN=true in .env or "dry_run": true in config.json
+# Production (default):
 python balance_wheel.py
+
+# Dry-run only when testing:
+DRY_RUN=true python balance_wheel.py
 ```
 
 ---
@@ -93,8 +96,8 @@ Stocks **not** in your demat are skipped with: `Skipping SYMBOL: missing market 
 
 ### Live orders when you meant to test
 
-**Cause:** `config.json` has `"dry_run": false` and `DRY_RUN` not set in `.env`.  
-**Fix:** Set `"dry_run": true` in `config.json` **or** `DRY_RUN=true` in `.env` (env overrides config).
+**Cause:** `DRY_RUN=true` or `PAPER_TRADING=true` in `.env`, or `"dry_run": true` in `config.json`.  
+**Fix:** Remove those from `.env` / set `dry_run: false` for live production (default).
 
 ---
 
@@ -112,7 +115,8 @@ Use dry-run only; do not commit credentials. Example flow after auth:
 
 Only after dry-run behaves as expected on a **market day**:
 
-1. Set `"dry_run": false` in `config.json` **and** remove or set `DRY_RUN=false` in `.env`.
+1. Confirm logs show **LIVE PRODUCTION MODE** (not DRY RUN).
+2. Remove `DRY_RUN=true` from `.env` if present.
 2. Confirm sufficient demat cash for computed order sizes.
 3. Schedule one run during market hours (e.g. 10:30–11:30 IST), not a tight loop.
 4. Monitor `logs/balance_wheel.log` after each run.

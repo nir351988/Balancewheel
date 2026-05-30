@@ -1,7 +1,7 @@
 {
   "app_name": "BalanceWheel",
-  "version": "1.0.4",
-  "dry_run": true,
+  "version": "1.0.6",
+  "dry_run": false,
   "analyze_holdings_only": true,
   "broker": {
     "platform": "Angel One",

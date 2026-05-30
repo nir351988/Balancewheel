@@ -9,7 +9,7 @@ services:
     
     environment:
       # Set to false for production
-      - DRY_RUN=true
+      - DRY_RUN=false
       - PYTHONUNBUFFERED=1
       - TZ=Asia/Kolkata
       

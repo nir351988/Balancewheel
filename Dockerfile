@@ -30,7 +30,7 @@ USER botuser
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV DRY_RUN=true
+ENV DRY_RUN=false
 
 # Health check
 HEALTHCHECK --interval=5m --timeout=30s --start-period=30s --retries=3 \

@@ -4,6 +4,12 @@ All notable changes to this project should be documented in this file. Follow Se
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-05-30
+
+### Changed
+- **Production default:** `dry_run: false` in `config.json`; real orders unless `DRY_RUN=true` or `PAPER_TRADING=true` in `.env`.
+- Startup logs clearly show LIVE vs DRY RUN mode.
+
 ## [1.0.5] - 2026-05-30
 
 ### Fixed

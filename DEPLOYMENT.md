@@ -78,24 +78,27 @@ ANGEL_API_KEY=your_key
 ANGEL_CLIENT_CODE=your_code
 ANGEL_PASSWORD=your_password
 ANGEL_TOTP=your_totp
-DRY_RUN=true
+# DRY_RUN=true   # omit for production (default: live)
 ```
 
 Press Ctrl+O to save, Enter, then Ctrl+X to exit.
 
-#### 4. Test Dry-Run (3 min)
+#### 4. Test auth, then production run (3 min)
 
 ```bash
 workon balance_wheel
+python dev_tools.py --test auth
 python balance_wheel.py
 ```
 
-Expected output:
+Expected startup line:
 ```
-BalanceWheel Bot Initialized
-Authentication successful
-[BUY] TCS: Price dip 16.50%...
-[DRY RUN] Would place order: TCS x150 @ 3400
+LIVE PRODUCTION MODE — real BUY orders will be sent to Angel One when signals fire
+```
+
+Optional dry-run:
+```bash
+DRY_RUN=true python balance_wheel.py
 ```
 
 #### 5. Set Up Scheduled Task (2 min)
@@ -123,13 +126,9 @@ tail -50 ~/BalanceWheel/logs/balance_wheel.log
 # Or use web console -> Files -> logs/balance_wheel.log
 ```
 
-#### 7. Enable Live Trading
+#### 7. Production is default
 
-```bash
-nano ~/BalanceWheel/config.json
-# Change: "dry_run": false
-# Save and exit
-```
+Ensure `.env` does **not** set `DRY_RUN=true`. Scheduled tasks run live unless you opt in to dry-run.
 
 ### PythonAnywhere Troubleshooting
 
