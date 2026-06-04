@@ -4,6 +4,9 @@ All notable changes to this project should be documented in this file. Follow Se
 
 ## [Unreleased]
 
+### Added
+- [docs/TRADING_DIARY.md](TRADING_DIARY.md) — chronological record of bot runs and verified orders (linked from README).
+
 ## [1.0.9] - 2026-05-30
 
 ### Added

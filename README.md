@@ -644,6 +644,7 @@ This repository includes a dedicated `docs/` folder with authoritative reference
 
 - Project documentation: [docs/PROJECT_DOCUMENTATION.md](docs/PROJECT_DOCUMENTATION.md)
 - Verification & go-live: [docs/VERIFICATION.md](docs/VERIFICATION.md)
+- Trading diary (orders & run history): [docs/TRADING_DIARY.md](docs/TRADING_DIARY.md)
 - Changelog: [docs/CHANGELOG.md](docs/CHANGELOG.md)
 - Docs maintenance guide: [docs/DOCS_MAINTENANCE.md](docs/DOCS_MAINTENANCE.md)
 
