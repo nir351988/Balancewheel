@@ -488,3 +488,53 @@ SmartApi.smartExceptions.DataException: Couldn't parse the JSON response receive
 2026-06-04 10:36:39 IST - BalanceWheel - INFO - [shutdown:1336] - ================================================================================
 2026-06-04 10:36:39 IST - BalanceWheel - INFO - [_push_logs_to_github:1324] - Git command successful: git config
 2026-06-04 10:36:39 IST - BalanceWheel - INFO - [_push_logs_to_github:1324] - Git command successful: git config
+2026-06-04 10:36:39 IST - BalanceWheel - INFO - [_push_logs_to_github:1324] - Git command successful: git add
+2026-06-04 10:36:39 IST - BalanceWheel - INFO - [_push_logs_to_github:1324] - Git command successful: git commit
+2026-06-04 10:36:41 IST - BalanceWheel - INFO - [_push_logs_to_github:1324] - Git command successful: git push
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [__init__:978] - ================================================================================
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [__init__:979] - BalanceWheel Bot Initialized - BalanceWheel v1.0.9
+2026-06-04 10:38:39 IST - BalanceWheel - WARNING - [__init__:983] - LIVE PRODUCTION MODE — real BUY orders will be sent to Angel One when signals fire
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [__init__:988] - Repository configured from env: https://github.com/nir351988/Balancewheel.git
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [__init__:990] - GitHub token loaded from environment (hidden)
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [__init__:991] - ================================================================================
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [startup:1084] - Starting up BalanceWheel bot...
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [startup:1091] - Authentication successful: Fresh authentication successful
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [_init_db:151] - Database initialized: data/balance_wheel.db
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [get_all_holdings:335] - Loaded 3 portfolio holding(s) from demat
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1135] - ================================================================================
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1136] - DMAT ACCOUNT SNAPSHOT (Angel One)
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1137] - ================================================================================
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1138] - Client: FF***
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1139] - Mode: LIVE PRODUCTION
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1143] - Available cash / margin (INR): 1,092.27 [rmsLimit.availablecash]
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1147] - Holdings: 3 position(s), market value (INR): 21,429.50
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1151] - Total DMAT estimate (cash + holdings) (INR): 22,521.76
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1154] - --------------------------------------------------------------------------------
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1155] - Symbol            Qty        Avg       LTP*        Value
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1157] - BAJAJFINSV          1    2110.90    1728.50      1728.50
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1157] - HCLTECH             6    1497.26    1167.00      7002.00
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1157] - HDFCBANK           17     824.16     747.00     12699.00
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1161] - * LTP from holdings API (last price; may be close when market is shut)
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1164] - Angel One account API: OK (auth + data)
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [log_dmat_account_summary:1168] - ================================================================================
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [startup:1115] - Bot startup completed successfully!
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [run_cycle:1224] - --------------------------------------------------------------------------------
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [run_cycle:1225] - Starting trading cycle at 2026-06-04 10:38:39.877522
+2026-06-04 10:38:39 IST - BalanceWheel - INFO - [run_cycle:1232] - Portfolio mode: analyzing demat holdings only (watchlist has 13 names for sector/metadata reference)
+2026-06-04 10:38:40 IST - BalanceWheel - INFO - [run_cycle:1257] - [STATUS_CHECKED] HDFCBANK [watchlist]: Price dip 9.36%. Status: Normal monitoring.
+2026-06-04 10:38:40 IST - BalanceWheel - INFO - [run_cycle:1257] - [BUY] HCLTECH [watchlist]: Price dip 22.08% >= 15%. Buy 28 shares to move avg toward 5% buffer above LTP.
+2026-06-04 10:38:40 IST - BalanceWheel - ERROR - [get_nifty_50_change_percent:681] - Error fetching Nifty 50 data: 429 Client Error: Too Many Requests for url: https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI
+2026-06-04 10:38:40 IST - BalanceWheel - WARNING - [run_cycle:1270] - Execution blocked: Insufficient balance after safety buffer
+2026-06-04 10:38:40 IST - BalanceWheel - ERROR - [_lookup_symbol_token:364] - Error searching symbol token for BAJAJFINSV: Couldn't parse the JSON response received from the server: b'Access denied because of exceeding access rate'
+2026-06-04 10:38:40 IST - BalanceWheel - WARNING - [get_ltp:488] - Could not resolve Angel One symbol token for BAJAJFINSV
+2026-06-04 10:38:40 IST - BalanceWheel - WARNING - [get_ltp:490] - Angel One market data unavailable for BAJAJFINSV; using fallback source
+2026-06-04 10:38:41 IST - BalanceWheel - ERROR - [get_ltp_from_yahoo:473] - Yahoo Finance fallback failed for BAJAJFINSV: 429 Client Error: Too Many Requests for url: https://query1.finance.yahoo.com/v8/finance/chart/BAJAJFINSV.NS?interval=1d&range=1d
+2026-06-04 10:38:41 IST - BalanceWheel - WARNING - [get_ltp:495] - Failed to fetch LTP for BAJAJFINSV
+2026-06-04 10:38:41 IST - BalanceWheel - WARNING - [run_cycle:1246] - Skipping BAJAJFINSV: could not fetch LTP
+2026-06-04 10:38:41 IST - BalanceWheel - INFO - [run_cycle:1275] - Trading cycle completed. Processed 2 holding(s).
+2026-06-04 10:38:41 IST - BalanceWheel - INFO - [run_cycle:1276] - --------------------------------------------------------------------------------
+2026-06-04 10:38:41 IST - BalanceWheel - INFO - [shutdown:1334] - ================================================================================
+2026-06-04 10:38:41 IST - BalanceWheel - INFO - [shutdown:1335] - BalanceWheel Bot shutting down: Trading cycle completed
+2026-06-04 10:38:41 IST - BalanceWheel - INFO - [shutdown:1336] - ================================================================================
+2026-06-04 10:38:41 IST - BalanceWheel - INFO - [_push_logs_to_github:1324] - Git command successful: git config
+2026-06-04 10:38:41 IST - BalanceWheel - INFO - [_push_logs_to_github:1324] - Git command successful: git config
