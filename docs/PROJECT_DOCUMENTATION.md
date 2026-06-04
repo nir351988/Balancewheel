@@ -1,82 +1,134 @@
-BalanceWheel — Project Documentation
-=================================
+# BalanceWheel — Project Documentation
 
-Version: 1.0.1
-Last Updated: 2026-05-30
+**Version:** 1.0.9  
+**Last updated:** 2026-06-04
 
-Purpose
-- Full project reference, architecture, operation, and maintenance guide for BalanceWheel trading bot.
+## Purpose
 
-Contents
-- Overview
-- Architecture & file map
-- Configuration & secrets
-- Running the bot (local / cloud)
-- Logging & centralized log push
-- Troubleshooting common issues
-- Development and documentation workflow
+Technical reference for architecture, configuration, deployment, logging, and maintenance of the BalanceWheel trading bot (Angel One SmartAPI).
 
-Overview
-- BalanceWheel is a Python trading bot designed to run on local machines or cloud hosts (e.g., PythonAnywhere). It analyzes configured universe stocks and places buy orders via Angel One (SmartAPI). The project includes an automated mechanism to push runtime logs into a GitHub repository for centralized analysis.
+## Documentation index
 
-Architecture & File Map
-- Top-level files and directories (primary files to inspect):
-  - balance_wheel.py — Main bot entrypoint and cycle orchestration.
-  - auth_manager.py — Authentication wrapper for Angel One SmartAPI.
-  - market_data_manager.py — Market data helpers; LTP, symbol token lookup, Yahoo fallback.
-  - config.json — Runtime configuration and trading rules (dry_run, cooldown_days, thresholds).
-  - data/ — SQLite DB directory (data/balance_wheel.db).
-  - logs/ — Runtime logs (RotatingFileHandler). NOTE: logs are sensitive and should be excluded from commits unless sanitized.
-  - tests/ — Unit tests.
-  - test_shims/ — Offline SmartConnect stub for pytest only.
-  - smartapi_client.py — Loads official Angel One SDK (production).
-  - .env — Local environment secrets (never commit to remote).
-  - docs/ — Project documentation (this folder).
+| Document | Description |
+|----------|-------------|
+| [README.md](../README.md) | User guide and strategy |
+| [VERIFICATION.md](VERIFICATION.md) | Pre-flight checks and known issues |
+| [TRADING_DIARY.md](TRADING_DIARY.md) | Verified orders and run history |
+| [TARGET_STOCKS.md](TARGET_STOCKS.md) | Watchlist rationale |
+| [GCP_VM_BOOTSTRAP.md](GCP_VM_BOOTSTRAP.md) | GCP Ubuntu VM provisioning (no crontab) |
+| [CHANGELOG.md](CHANGELOG.md) | Release notes |
+| [DOCS_MAINTENANCE.md](DOCS_MAINTENANCE.md) | How to keep docs in sync |
 
-Test Shim Note
-- Do **not** add a top-level `smartapi/` package; it shadows the official SDK and breaks login (`unexpected keyword argument 'clientCode'`).
-- **Production:** `pip install -r requirements-runtime.txt`; imports go through `smartapi_client.py`.
-- Angel One login requires **TOTP** (SDK >= 1.5.5). See [VERIFICATION.md](VERIFICATION.md).
+## Overview
 
-Documentation index
-- [VERIFICATION.md](VERIFICATION.md) — pre-flight checks and known issues
-- [CHANGELOG.md](CHANGELOG.md) — release notes
+BalanceWheel is a **buy-only**, mean-reversion bot that:
 
-Configuration & Secrets
-- Secrets and credentials are stored in `.env` for local runs. Recommended deployment practices:
-  - Do NOT commit `.env` or `logs/` to Git. Add them to `.gitignore`.
-  - Rotate any tokens that were accidentally exposed.
-  - For hosted deployments, set environment variables in the host UI (PythonAnywhere env settings, CI secrets, etc.).
+- Authenticates to Angel One via SmartAPI (TOTP, SDK >= 1.5.5)
+- By default analyzes **all demat holdings** (`analyze_holdings_only: true`)
+- Uses `target_stocks` for sector/metadata when symbols match
+- Places **LIMIT DELIVERY** BUY orders on NSE when the 15/5 rule fires (unless dry-run)
+- Persists observations and trades in SQLite; rotates logs locally; optionally pushes logs to GitHub
 
-Running the bot
-- Local (development):
-  1. Create a Python virtual environment and install requirements (`pip install -r requirements.txt`).
-  2. Populate `.env` with Angel One credentials and a GitHub token only if needed for log pushes.
-  3. Configure `config.json` (set `dry_run` true for tests).
-  4. Run: `python balance_wheel.py`
+**Production default:** `dry_run: false` in `config.json`. Opt into simulation with `DRY_RUN=true` or `PAPER_TRADING=true` in `.env`.
 
-- Production / Hosted:
-  - Use platform environment variables instead of `.env`.
-  - Ensure `GITHUB_TOKEN` has minimal permissions (repo contents only if private, or a scoped token for log pushes). Rotate tokens regularly.
+## Architecture and file map
 
-Logging & Centralized Log Push
-- Logs are written locally to `logs/balance_wheel.log` using a timezone-aware formatter.
-- On shutdown the bot attempts to commit and push logs to the configured `GITHUB_REPO` using `GITHUB_TOKEN`. Safeguards:
-  - `_push_logs_to_github()` sanitizes commit messages and avoids including raw secrets.
-  - Logs should still be treated as sensitive — sanitize before pushing.
+```
+BalanceWheel/
+├── balance_wheel.py      # Main entry: bot, market data, engine, DB, GitHub log push
+├── auth_manager.py       # Angel One auth + token cache (.credentials.json)
+├── smartapi_client.py    # Imports official SmartConnect (avoids local shim)
+├── dev_tools.py          # Diagnostics (--test auth, account, config, …)
+├── utils.py              # Helpers and trade summaries
+├── config.json           # Rules, watchlist, order_settings
+├── requirements-runtime.txt  # Production dependencies (PA, GCP)
+├── requirements.txt      # Full dev dependencies
+├── tests/                # pytest (20 tests)
+├── test_shims/           # Offline SmartAPI stub for tests only
+├── logs/                 # Runtime logs (gitignored; may be pushed by bot)
+└── data/                 # balance_wheel.db (gitignored)
+```
 
-Troubleshooting — Common Issues
-- **Authentication / TOTP:** Upgrade `pip install "smartapi-python>=1.5.5"`. Set `ANGEL_TOTP` or `ANGEL_TOTP_SECRET` in `.env`. Clear stale tokens: delete `.credentials.json`.
-- **SDK / shim conflict:** If login uses a stub, upgrade the official package; do not rely on `smartapi/smartConnect.py` for live trading.
-- **Angel One rate limit:** Reduce `target_stocks` or run fewer cycles per day; avoid hammering `holding()` in tight loops.
-- **Yahoo 429 (Too Many Requests):** Throttle runs; Nifty sentiment check may fail without blocking other logic.
-- **SmartAPI `placeOrder()` returns `None`:** Verify credentials, product type (CNC/MIS), `symboltoken` mapping, and account permissions.
-- **Accidental secret commit:** Rotate tokens immediately; remove from git history if needed.
-- **Live orders unintentionally:** Ensure `dry_run: true` in `config.json` or `DRY_RUN=true` in `.env`.
+**Do not** add a top-level `smartapi/` package — it shadows the official SDK.
 
-Development & Documentation Workflow
-- Update `docs/CHANGELOG.md` for every meaningful change. Keep `docs/PROJECT_DOCUMENTATION.md` and `README.md` in sync.
-- Documentation policy: update docs on every PR/commit that changes behavior, config, or public interfaces.
+### Class responsibilities (in `balance_wheel.py`)
 
-Contact & Ownership
-- Owner: repo owner (see GitHub remote configured in `.env` / `GITHUB_REPO`).
+| Class | Role |
+|-------|------|
+| `BalanceWheelBot` | Startup, `run_cycle()`, `--account`, shutdown, log push |
+| `MarketDataManager` | Holdings cache, LTP, symbol token, Yahoo fallback |
+| `BalanceWheelEngine` | 15/5 analysis, constraints, `execute_buy_order()` |
+| `ObservationDatabase` | SQLite: `observations`, `executed_trades` |
+
+## Configuration
+
+### `config.json` (key fields)
+
+| Key | Default | Meaning |
+|-----|---------|---------|
+| `version` | 1.0.9 | App version string in logs |
+| `dry_run` | false | Live orders unless overridden by env |
+| `analyze_holdings_only` | true | Scan all demat holdings each cycle |
+| `startup_show_account` | true | DMAT snapshot at startup |
+| `order_settings` | LIMIT, DELIVERY, NORMAL, NSE | Angel `placeOrder` fields |
+| `trading_rules.cooldown_days` | 0 | Days between buys per symbol (set 7 if desired) |
+| `trading_rules.minimum_balance_required_inr` | 2000 | Minimum cash before buys |
+
+### Environment variables (`.env`)
+
+Loaded automatically via `python-dotenv`. Common keys:
+
+- `ANGEL_API_KEY`, `ANGEL_CLIENT_CODE`
+- `ANGEL_PASSWORD` or `ANGEL_PIN` or `ANGELONE_PIN`
+- `ANGEL_TOTP` or `ANGEL_TOTP_SECRET`
+- `DRY_RUN`, `PAPER_TRADING` — force dry-run when set true
+- `MIN_WALLET_BALANCE` — overrides minimum balance rule
+- `GITHUB_TOKEN`, `GITHUB_REPO` — optional log push after each run
+
+See [.env.example](../.env.example).
+
+## Running the bot
+
+```bash
+pip install -r requirements-runtime.txt
+
+# Connection + DMAT snapshot only (no trading cycle)
+python balance_wheel.py --account
+
+# Full trading cycle (live unless DRY_RUN=true)
+python balance_wheel.py
+
+# Tests
+python -m pytest tests/ -q
+```
+
+### Hosting
+
+- **PythonAnywhere:** `requirements-runtime.txt`, Python 3.10/3.12/3.13 (avoid broken 3.11 on some accounts)
+- **GCP Ubuntu VM:** See [GCP_VM_BOOTSTRAP.md](GCP_VM_BOOTSTRAP.md); schedule runs from your infra repo (e.g. 10:30 IST weekdays)
+- **Angel One live orders:** May require a **registered static IPv4** on the SmartAPI dashboard (GCP VM with reserved IP)
+
+## Logging and GitHub log push
+
+- File: `logs/balance_wheel.log` (rotating, timezone-aware)
+- On shutdown, if `GITHUB_TOKEN` and `GITHUB_REPO` are set, the bot may commit/push `logs/`
+- **Risk:** Logs can contain API errors with token fragments — prefer a private repo or disable push on public repos
+
+## Troubleshooting (quick)
+
+| Issue | Action |
+|-------|--------|
+| `unexpected keyword argument 'totp'` | `pip install "smartapi-python>=1.5.5"` |
+| `Invalid Token` / AG8001 | `rm .credentials.json`, re-run |
+| Rate limit on holdings/search | Run once per session; avoid back-to-back cycles |
+| Yahoo 429 | Nifty check skipped; reduce run frequency |
+| Unintended live orders | Remove `DRY_RUN` from `.env`; confirm log says LIVE PRODUCTION MODE |
+
+Full list: [VERIFICATION.md](VERIFICATION.md).
+
+## Development workflow
+
+1. Change code/config
+2. Run `pytest tests/`
+3. Update `docs/CHANGELOG.md` and affected docs
+4. For behavior changes, add notes to [TRADING_DIARY.md](TRADING_DIARY.md) when verifying live trades

@@ -19,16 +19,19 @@ This file documents the project repository and secure-local storage guidance.
    ANGEL_PASSWORD=
    ANGEL_TOTP=
    # Or: ANGEL_TOTP_SECRET=   # secret from enable-totp page; pyotp generates codes
-   DRY_RUN=true
+   # Omit DRY_RUN for production (live default)
+   MIN_WALLET_BALANCE=500
    GITHUB_TOKEN=
-   GITHUB_REPO=
+   GITHUB_REPO=https://github.com/nir351988/Balancewheel.git
    ```
 3. Keep `.env` private.
 4. Use `git status` to verify the file is not tracked.
 
 ## SDK requirement (Angel One)
-- Install `smartapi-python>=1.5.5` for TOTP-based login (see `requirements.txt`).
-- Verification steps: [docs/VERIFICATION.md](docs/VERIFICATION.md)
+- Production: `pip install -r requirements-runtime.txt`
+- `smartapi-python>=1.5.5` for TOTP-based login
+- Verification: [docs/VERIFICATION.md](docs/VERIFICATION.md)
+- GCP bootstrap: [docs/GCP_VM_BOOTSTRAP.md](docs/GCP_VM_BOOTSTRAP.md)
 
 ## Reminder
 This file contains metadata only. Sensitive tokens must never be saved in plain text in the repository.

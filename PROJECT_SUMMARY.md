@@ -4,10 +4,10 @@
 
 **BalanceWheel** is a production-ready, mean-reversion trading bot for Angel One's SmartAPI platform. It implements intelligent cost-averaging strategies to systematically lower portfolio average prices during market dips.
 
-**Status:** ✅ Complete & Production Ready (dry-run default)  
-**Version:** 1.0.1  
+**Status:** ✅ Production ready (live default; dry-run opt-in)  
+**Version:** 1.0.9  
 **Created:** May 10, 2026  
-**Last verified:** May 30, 2026
+**Last verified:** June 4, 2026
 
 ---
 
@@ -17,7 +17,8 @@
 |---------|---------|
 | **Strategy** | Mean-reversion with smart cost-averaging |
 | **Entry Signal** | 15/5 Rule (Price ≥15% below avg → buy to hit 5% above LTP) |
-| **Safety Mechanisms** | 7-day cool-down, sector locks, market sentiment checks |
+| **Safety Mechanisms** | Balance checks, optional cooldown, sector locks, Nifty sentiment |
+| **Portfolio mode** | Analyzes all demat holdings (`analyze_holdings_only: true`) |
 | **Execution** | Precision buy orders on Angel One SmartAPI |
 | **Logging** | 10-day rotating logs with SQLite persistence |
 | **Dry-Run** | Full simulation mode for testing |
@@ -32,21 +33,25 @@ BalanceWheel/
 │
 ├── 📄 Core Application
 │   ├── balance_wheel.py           # Main bot engine (700+ lines)
-│   ├── auth_manager.py            # Angel One authentication (200+ lines)
-│   ├── utils.py                   # Utility functions (300+ lines)
-│   └── dev_tools.py               # Testing & diagnostics (400+ lines)
+│   ├── auth_manager.py            # Angel One authentication
+│   ├── smartapi_client.py         # Official SDK import wrapper
+│   ├── utils.py                   # Utility functions
+│   └── dev_tools.py               # Testing & diagnostics
 │
 ├── ⚙️  Configuration
 │   ├── config.json                # Bot & stock configuration
 │   ├── .env.example               # Environment variables template
 │   ├── .gitignore                 # Git ignore rules
-│   └── requirements.txt           # Python dependencies (28 packages)
+│   ├── requirements-runtime.txt   # Production dependencies
+│   └── requirements.txt           # Full dev dependencies
 │
 ├── 📚 Documentation
 │   ├── README.md                  # Complete guide (500+ lines)
 │   ├── QUICKSTART.md              # 5-minute setup guide
 │   ├── DEPLOYMENT.md              # Deployment strategies
-│   ├── docs/VERIFICATION.md       # Pre-flight checks & known issues
+│   ├── docs/VERIFICATION.md       # Pre-flight checks
+│   ├── docs/TRADING_DIARY.md      # Verified orders / runs
+│   ├── docs/GCP_VM_BOOTSTRAP.md   # GCP provisioning
 │   ├── docs/CHANGELOG.md          # Release history
 │   └── PROJECT_SUMMARY.md         # This file
 │
@@ -57,7 +62,8 @@ BalanceWheel/
 │
 ├── 🧪 Testing
 │   ├── tests/
-│   │   ├── test_engine.py         # 15+ unit tests
+│   │   ├── test_engine.py         # Unit tests
+│   │   └── test_portfolio_mode.py # Portfolio-mode tests
 │   │   ├── test_auth.py           # Authentication tests
 │   │   └── test_market_data.py    # Market data tests
 │   └── dev_tools.py               # Comprehensive test suite
@@ -83,7 +89,7 @@ BalanceWheel/
 # Clone and setup
 git clone <repo> BalanceWheel && cd BalanceWheel
 python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements-runtime.txt
 
 # Configure
 cp .env.example .env
@@ -98,9 +104,9 @@ python balance_wheel.py
 | Platform | Time | Cost | Effort |
 |----------|------|------|--------|
 | **PythonAnywhere** | 10 min | $0-20/mo | ⭐ Easy |
-| **AWS Lambda** | 15 min | $1-5/mo | ⭐⭐ Medium |
+| **GCP Ubuntu** | 15 min | VM cost | ⭐⭐ Medium (static IP) |
 | **Docker** | 20 min | $5-20/mo | ⭐⭐ Medium |
-| **Local VPS** | 30 min | $5-50/mo | ⭐⭐⭐ Complex |
+| **AWS Lambda** | 15 min | $1-5/mo | ⭐⭐⭐ Advanced |
 
 See **DEPLOYMENT.md** for detailed instructions.
 
@@ -306,7 +312,7 @@ sqlite3 data/balance_wheel.db \
 
 ```
 test_engine.py:
-  ✓ 15+ unit tests
+  ✓ 20 unit tests (pytest)
   ✓ Trading logic verification
   ✓ Constraint checking
   ✓ Calculation accuracy

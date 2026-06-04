@@ -3,15 +3,17 @@
 ## Deployment Platforms
 
 This guide covers deployment to:
-1. **PythonAnywhere** (Recommended - Serverless, easy setup)
-2. **AWS Lambda** (Serverless, pay-per-use)
-3. **Docker** (Any cloud provider)
-4. **Local Server** (VPS/Dedicated server)
+1. **PythonAnywhere** (easy hosted Python + scheduler)
+2. **GCP Ubuntu VM** (static IP for live orders; schedule via your infra repo)
+3. **Docker** (any cloud provider)
+4. **AWS Lambda** (serverless; advanced)
+5. **Local / VPS**
 
 ---
 
 ## Table of Contents
 - [PythonAnywhere Deployment](#pythonanywhere-deployment)
+- [GCP Ubuntu / Linux VPS](#gcp-ubuntu--linux-vps)
 - [AWS Lambda Deployment](#aws-lambda-deployment)
 - [Docker Deployment](#docker-deployment)
 - [Post-Deployment Checks](#post-deployment-checks)
@@ -180,6 +182,46 @@ rm .credentials.json
 python dev_tools.py --test auth
 ```
 See [docs/VERIFICATION.md](docs/VERIFICATION.md) for the full checklist.
+
+---
+
+## GCP Ubuntu / Linux VPS
+
+Use for **live trading** when you need a **stable outbound IP** registered on the Angel One SmartAPI dashboard.
+
+### Bootstrap (every new VM)
+
+Full command block: **[docs/GCP_VM_BOOTSTRAP.md](docs/GCP_VM_BOOTSTRAP.md)** (Terraform / GitHub Actions inject `BALANCEWHEEL_DOTENV`).
+
+Summary:
+
+```bash
+git clone https://github.com/nir351988/Balancewheel.git /opt/balancewheel
+cd /opt/balancewheel
+python3 -m venv venv && ./venv/bin/pip install -r requirements-runtime.txt
+# write .env from secret, chmod 600
+./venv/bin/python balance_wheel.py --account
+```
+
+### Scheduling
+
+Bootstrap does **not** install crontab. Your infra repo should trigger once per market day, e.g. **10:30 IST Mon–Fri**:
+
+```bash
+cd /opt/balancewheel && /opt/balancewheel/venv/bin/python balance_wheel.py
+```
+
+Set VM timezone: `sudo timedatectl set-timezone Asia/Kolkata`.
+
+### Static IP
+
+1. Reserve GCP static external IP → attach to VM  
+2. Register IP in Angel One SmartAPI portal  
+3. `git pull` on VM after code updates
+
+### Trade history
+
+See [docs/TRADING_DIARY.md](docs/TRADING_DIARY.md) for log-verified orders.
 
 ---
 

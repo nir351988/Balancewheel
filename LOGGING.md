@@ -72,10 +72,9 @@ Balancewheel/
 ```
 
 ### Access & Analysis
-- Logs are publicly accessible on GitHub
-- Enable GitHub Pages for web-based log viewing
-- Use GitHub's search and blame features for analysis
-- Download logs for local processing
+- If the repo is **public**, pushed logs may expose API errors (including token fragments) — use a **private** repo or disable `GITHUB_TOKEN` log push
+- Download `logs/balance_wheel.log` from GitHub or the VM for analysis
+- Verified trades: [docs/TRADING_DIARY.md](docs/TRADING_DIARY.md)
 
 ## Configuration
 

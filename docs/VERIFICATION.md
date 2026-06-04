@@ -1,44 +1,46 @@
 # BalanceWheel — Verification & Operations Guide
 
-**Last verified:** 2026-05-30  
-**Python:** 3.11+  
-**SmartAPI package:** `smartapi-python` >= 1.5.5 (TOTP login required)
+**Last verified:** 2026-06-04  
+**App version:** 1.0.9  
+**Python:** 3.9–3.13  
+**SmartAPI:** `smartapi-python` >= 1.5.5 (TOTP required)
 
-This guide documents how to verify that credentials, APIs, and the trading engine work before enabling live orders.
+Use this guide before and after go-live to confirm credentials, APIs, and trading behavior.
 
 ---
 
 ## Prerequisites
 
-1. Angel One account with SmartAPI enabled and [TOTP activated](https://smartapi.angelbroking.com/enable-totp).
-2. `.env` created from `.env.example` (never commit `.env`).
-3. Dependencies installed: `pip install -r requirements-runtime.txt` (PythonAnywhere / production) or `pip install -r requirements.txt` (full dev). If you see `No module named 'logzero'`, re-run that install (logzero is required by the Angel One SDK).
-4. Confirm SDK version: `pip show smartapi-python` → version **1.5.5 or higher**.
+1. Angel One account with SmartAPI and [TOTP enabled](https://smartapi.angelbroking.com/enable-totp).
+2. `.env` from `.env.example` (never commit `.env`).
+3. `pip install -r requirements-runtime.txt` (production) or `requirements.txt` (dev).
+4. `pip show smartapi-python` → version **>= 1.5.5**.
 
-**PythonAnywhere:** Use Python **3.10, 3.12, or 3.13** for `mkvirtualenv`. Avoid **3.11** if you see `No module named '_posixsubprocess'` (known broken symlink on some accounts).
+**PythonAnywhere:** Use Python **3.10, 3.12, or 3.13** for `mkvirtualenv`. Avoid **3.11** if you see `No module named '_posixsubprocess'`.
+
+**GCP:** See [GCP_VM_BOOTSTRAP.md](GCP_VM_BOOTSTRAP.md).
 
 ---
 
 ## Quick verification commands
 
 ```bash
-# 1. Unit tests (offline; uses local SmartAPI shim)
+# 1. Unit tests (offline; 20 tests)
 python -m pytest tests/ -q
 
-# 2. Environment and config (needs real .env for auth test)
+# 2. Environment and config
 python dev_tools.py --test environment
 python dev_tools.py --test config
 python dev_tools.py --test auth
 
-# 3. DMAT balance + holdings (any time — best connection check)
+# 3. DMAT snapshot (any time — best connection check)
 python dev_tools.py --test account
-# or:
 python balance_wheel.py --account
 
 # 4. Full trading cycle
 python balance_wheel.py
 
-# Dry-run only when testing:
+# Dry-run only when testing
 DRY_RUN=true python balance_wheel.py
 ```
 
@@ -48,26 +50,30 @@ DRY_RUN=true python balance_wheel.py
 
 | Check | Expected result |
 |-------|-----------------|
-| Authentication | `Authentication successful` in logs |
-| Holdings API | Returns positions you hold in demat |
-| RMS / balance | Available cash or margin in INR |
-| Dry-run cycle | `[DRY RUN] Would place order` for BUY signals only |
+| Authentication | `Authentication successful` |
+| Account mode | `LIVE PRODUCTION MODE` or explicit `DRY RUN MODE` |
+| Holdings | Demat positions listed in startup snapshot |
+| Portfolio mode | Log: `analyzing demat holdings only` |
+| Dry-run | `[DRY RUN] Would place order` — no broker order ID |
+| Live BUY | `Placing LIVE order` → `Order placed successfully` + numeric `orderid` |
+| Blocked buy | `Execution blocked: …` (balance, cooldown, sentiment) |
 | Database | Rows in `observations` after each cycle |
 | Logs | `logs/balance_wheel.log` updated with timezone |
 
-Stocks **not** in your demat are skipped with: `Skipping SYMBOL: missing market data or no current holding`.
+Holdings **not** in demat are not analyzed in portfolio mode (watchlist names without positions are ignored).
 
 ---
 
-## Verification checklist (2026-05-30)
+## Verification checklist
 
-- [x] `pytest tests/` — 14 tests passed
+- [x] `pytest tests/` — 20 passed (2026-06-04)
 - [x] Angel One login with TOTP (SDK >= 1.5.5)
-- [x] Holdings and available balance fetched
-- [x] Dry-run cycle completed without live orders
-- [x] GitHub log push (when `GITHUB_TOKEN` and `GITHUB_REPO` set)
-- [ ] Align `target_stocks` in `config.json` with symbols you actually hold
-- [ ] Re-enable `cooldown_days` (e.g. 7) before production if desired
+- [x] `--account` shows cash and holdings
+- [x] Portfolio-first mode (`analyze_holdings_only: true`)
+- [x] Live order path logged (see [TRADING_DIARY.md](TRADING_DIARY.md))
+- [ ] `cooldown_days` set as desired (default **0** in `config.json`; use **7** to enable weekly cooldown)
+- [ ] GCP static IP registered for live orders (if using GCP)
+- [ ] Review whether GitHub log push is appropriate for repo visibility
 
 ---
 
@@ -75,61 +81,50 @@ Stocks **not** in your demat are skipped with: `Skipping SYMBOL: missing market 
 
 ### `generateSession() got an unexpected keyword argument 'totp'`
 
-**Cause:** `smartapi-python` 1.3.x or older; Angel One requires TOTP on login.  
 **Fix:** `pip install --upgrade "smartapi-python>=1.5.5"`
 
-### `SmartApi` import fails or uses stub `smartConnect`
+### Local `smartapi/` shadowing SDK
 
-**Cause:** Local test shim in `smartapi/` can shadow the official package when the SDK is missing or outdated.  
-**Fix:** Upgrade SDK (above). The app prefers `from SmartApi import SmartConnect` when installed.
+**Fix:** Use current repo (imports via `smartapi_client.py`); upgrade SDK.
 
 ### `Access denied because of exceeding access rate`
 
-**Cause:** Too many Angel One API calls in one cycle (e.g. repeated `holding()` per symbol).  
-**Fix:** Run once or twice per trading session; reduce `target_stocks`; add delay between manual API scripts.
+**Cause:** Too many Angel API calls in one session.  
+**Fix:** One run per trading window; avoid multiple cycles within minutes.
 
-### Yahoo Finance `429 Too Many Requests` (Nifty sentiment)
+### Yahoo Finance `429` (Nifty sentiment)
 
-**Cause:** Free Yahoo quote API rate limit.  
-**Impact:** Nifty circuit-breaker check may be skipped for that run; other logic still runs.  
-**Fix:** Run less frequently; optional paid quote source for production.
+**Impact:** Nifty circuit-breaker may be skipped; other logic continues.
 
 ### Cached token `Invalid Token` (AG8001)
 
-**Fix:** Delete `.credentials.json` and re-run; bot will perform fresh login.
+**Fix:** `rm .credentials.json` and re-run.
 
-### Live orders when you meant to test
+### Unintended live orders
 
-**Cause:** `DRY_RUN=true` or `PAPER_TRADING=true` in `.env`, or `"dry_run": true` in `config.json`.  
-**Fix:** Remove those from `.env` / set `dry_run: false` for live production (default).
+**Fix:** Set `DRY_RUN=true` or `PAPER_TRADING=true` in `.env` for testing.
 
----
+### `No response from broker` / empty JSON on placeOrder
 
-## Portfolio snapshot (manual)
-
-Use dry-run only; do not commit credentials. Example flow after auth:
-
-1. Run `python dev_tools.py --test auth`
-2. Inspect latest log lines for balance and `[BUY]` / `Skipping` per symbol
-3. Query SQLite: `sqlite3 data/balance_wheel.db "SELECT symbol, action, dip_percentage, reason FROM observations ORDER BY id DESC LIMIT 20;"`
+**Cause:** Broker rejection, wrong symbol token, or rate limits.  
+**Fix:** Confirm `-EQ` symbol, DELIVERY product, sufficient cash; see logs and Angel order book.
 
 ---
 
 ## Going live
 
-Only after dry-run behaves as expected on a **market day**:
-
-1. Confirm logs show **LIVE PRODUCTION MODE** (not DRY RUN).
+1. Logs show **LIVE PRODUCTION MODE** (not DRY RUN).
 2. Remove `DRY_RUN=true` from `.env` if present.
-2. Confirm sufficient demat cash for computed order sizes.
-3. Schedule one run during market hours (e.g. 10:30–11:30 IST), not a tight loop.
-4. Monitor `logs/balance_wheel.log` after each run.
+3. Sufficient demat cash for sized orders (bot may reduce qty vs signal).
+4. Schedule **once** per market day (e.g. 10:30 IST), not a tight loop.
+5. Record order IDs in [TRADING_DIARY.md](TRADING_DIARY.md).
 
 ---
 
 ## Related docs
 
-- [README.md](../README.md) — full user guide
-- [QUICKSTART.md](../QUICKSTART.md) — 5-minute setup
-- [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md) — architecture reference
-- [CHANGELOG.md](CHANGELOG.md) — version history
+- [README.md](../README.md)
+- [QUICKSTART.md](../QUICKSTART.md)
+- [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md)
+- [TRADING_DIARY.md](TRADING_DIARY.md)
+- [CHANGELOG.md](CHANGELOG.md)

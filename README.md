@@ -1,8 +1,8 @@
 # BalanceWheel: Mean-Reversion & Smart Averaging Trading Bot
 
-**Version:** 1.0.1  
+**Version:** 1.0.9  
 **Platform:** Angel One (SmartAPI) — requires `smartapi-python` >= 1.5.5 (TOTP)  
-**Status:** Production Ready (default: **live trading**; dry-run opt-in via `DRY_RUN=true`)
+**Status:** Production ready (default: **live trading**; dry-run opt-in via `DRY_RUN=true`)
 
 ---
 
@@ -30,7 +30,7 @@
 
 ✅ **Automated Precision Buying** – Calculates exact shares needed to hit target average price  
 ✅ **15/5 Rule Engine** – Data-driven entry signals with multiple alert levels  
-✅ **7-Day Cool-Down** – Prevents "falling knife" scenarios  
+✅ **Configurable Cool-Down** – Optional per-symbol buy spacing (`cooldown_days`; default 0)  
 ✅ **Sector Diversification** – Max 1 buy per sector per 24 hours  
 ✅ **Market Sentiment Lock** – Pauses all buying if Nifty 50 drops >3%  
 ✅ **DRY-RUN Mode** – Test strategies before live execution  
@@ -143,7 +143,7 @@ Based on mean reversion principles and common market practice, the current 15% d
 - **Python 3.9+**
 - **Angel One Account** with SmartAPI enabled
 - **API Key & Credentials** from Angel One dashboard
-- **PythonAnywhere Account** (for hosting) or local server
+- **Host:** PythonAnywhere, GCP Ubuntu VM, Docker, or local machine
 
 ### Step 1: Clone/Setup Project
 
@@ -171,9 +171,16 @@ venv\Scripts\activate
 ### Step 3: Install Dependencies
 
 ```bash
+# Production (PythonAnywhere, GCP, live VPS)
+pip install -r requirements-runtime.txt
+
+# Full dev environment
 pip install -r requirements.txt
+
 pip show smartapi-python   # must be 1.5.5 or higher for TOTP login
 ```
+
+**GCP Ubuntu:** See [docs/GCP_VM_BOOTSTRAP.md](docs/GCP_VM_BOOTSTRAP.md) and [DEPLOYMENT.md](DEPLOYMENT.md#gcp-ubuntu--linux-vps).
 
 ### Step 4: PythonAnywhere Specific Setup
 
@@ -197,41 +204,29 @@ Schedule: Every 15 minutes (market hours)
 
 ```json
 {
-  "app_name": "BalanceWheel",
-  "version": "1.0.0",
-  "dry_run": false,  // Production default. For testing: true or DRY_RUN=true in .env
-  
-  "broker": {
-    "platform": "Angel One",
-    "api_key": "YOUR_API_KEY_HERE",
-    "client_code": "YOUR_CLIENT_CODE",
-    "password": "YOUR_PASSWORD",
-    "totp": "000000"  // Time-based OTP if enabled
+  "version": "1.0.9",
+  "dry_run": false,
+  "analyze_holdings_only": true,
+  "startup_show_account": true,
+  "order_settings": {
+    "variety": "NORMAL",
+    "ordertype": "LIMIT",
+    "producttype": "DELIVERY",
+    "duration": "DAY",
+    "exchange": "NSE"
   },
-  
   "trading_rules": {
-    "price_dip_threshold_percent": 15,        // Buy trigger
-    "target_average_buffer_percent": 5,       // Target avg offset
-    "high_alert_lower_threshold_percent": 12, // Alert zone lower
-    "high_alert_upper_threshold_percent": 15, // Alert zone upper
-    "minimum_balance_required_inr": 2000,     // Minimum DMAT
-    "cooldown_days": 7,                       // Buy frequency limit
-    "market_sentiment_nifty_down_percent": 3, // Market crash threshold
-    "safety_buffer_subtract_shares": 1        // Share reduction for taxes
-  },
-  
-  "target_stocks": [
-    {
-      "symbol": "TCS",
-      "exchange": "NSE",
-      "sector": "IT",
-      "category": "Dividend",
-      "priority": 1
-    }
-    // ... more stocks
-  ]
+    "price_dip_threshold_percent": 15,
+    "target_average_buffer_percent": 5,
+    "minimum_balance_required_inr": 2000,
+    "cooldown_days": 0,
+    "market_sentiment_nifty_down_percent": 3,
+    "safety_buffer_subtract_shares": 1
+  }
 }
 ```
+
+Watchlist symbols live in `target_stocks` (13 names) — see [docs/TARGET_STOCKS.md](docs/TARGET_STOCKS.md). Credentials belong in `.env`, not `config.json`.
 
 ### Setting Up Credentials Securely
 
@@ -241,23 +236,15 @@ Schedule: Every 15 minutes (market hours)
 # Create .env file (add to .gitignore)
 ANGEL_API_KEY=your_api_key
 ANGEL_CLIENT_CODE=your_client_code
-ANGEL_PASSWORD=your_password
-ANGEL_TOTP=your_totp_secret_or_6_digit_code
-# Or use ANGEL_TOTP_SECRET=... (pyotp generates codes automatically)
+ANGEL_PASSWORD=your_trading_pin
+# Or: ANGEL_PIN= / ANGELONE_PIN=
+ANGEL_TOTP_SECRET=your_totp_secret
+# Or: ANGEL_TOTP= (pyotp generates 6-digit codes from secret)
 # DRY_RUN=true   # Uncomment only for manual dry-run tests
+MIN_WALLET_BALANCE=500
 ```
 
-Update `balance_wheel.py` to load from env:
-```python
-from dotenv import load_dotenv
-load_dotenv()
-
-broker_config = {
-    "api_key": os.getenv("ANGEL_API_KEY"),
-    "client_code": os.getenv("ANGEL_CLIENT_CODE"),
-    # ...
-}
-```
+The bot loads `.env` automatically (`python-dotenv`). `BalanceWheelBot._apply_env_overrides()` merges env into config at runtime.
 
 **Option 2: Encrypted Credentials (Advanced)**
 
@@ -268,6 +255,13 @@ Use Python's `cryptography` library to encrypt sensitive data.
 ## Usage
 
 ### Running the Bot
+
+**Account snapshot only (no trading cycle)**
+
+```bash
+python balance_wheel.py --account
+# Alias: --status
+```
 
 **Dry-Run Mode (manual / agent testing only)**
 
@@ -320,7 +314,7 @@ Logs must show: `LIVE PRODUCTION MODE — real BUY orders will be sent to Angel 
 | Safeguard | Details |
 |-----------|---------|
 | **Minimum Balance Check** | Bot won't execute if DMAT < ₹2,000 |
-| **Cool-Down Period** | Won't re-buy same stock for 7 days |
+| **Cool-Down Period** | When `cooldown_days` > 0, blocks repeat buys per symbol |
 | **Safety Buffer** | Reduces shares by 1 to cover taxes/brokerage |
 | **Market Circuit Break** | Stops all buys if Nifty 50 drops >3% |
 | **Sector Lock** | Max 1 buy per sector per 24 hours |
@@ -364,8 +358,8 @@ logs/balance_wheel.log
 
 ```
 2026-05-10 09:30:00 - BalanceWheel - INFO - ================================================================================
-2026-05-10 09:30:00 - BalanceWheel - INFO - BalanceWheel Bot Initialized - BalanceWheel v1.0.0
-2026-05-10 09:30:00 - BalanceWheel - INFO - Dry Run Mode: True
+2026-06-04 10:36:37 - BalanceWheel - INFO - BalanceWheel Bot Initialized - BalanceWheel v1.0.9
+2026-06-04 10:36:37 - BalanceWheel - WARNING - LIVE PRODUCTION MODE — real BUY orders will be sent to Angel One when signals fire
 2026-05-10 09:30:00 - BalanceWheel - INFO - ================================================================================
 
 // Authentication
@@ -387,7 +381,9 @@ logs/balance_wheel.log
 2026-05-10 09:30:10 - BalanceWheel - INFO - Execution result: [DRY RUN] TCS x150 @ 3400.50 = 510075.00 INR
 
 // Cycle End
-2026-05-10 09:30:15 - BalanceWheel - INFO - Trading cycle completed. Processed 13 stocks.
+2026-06-04 10:36:38 - BalanceWheel - INFO - Placing LIVE order: HDFCBANK-EQ x10 LIMIT @ 747.6 (DELIVERY)
+2026-06-04 10:36:38 - BalanceWheel - INFO - Order placed successfully: HDFCBANK-EQ x10 @ 747.6. Order ID: 260604000384963
+2026-06-04 10:36:39 - BalanceWheel - INFO - Trading cycle completed. Processed 2 holding(s).
 2026-05-10 09:30:15 - BalanceWheel - INFO - --------------------------------------------------------------------------------
 ```
 
@@ -527,7 +523,9 @@ BalanceWheel/
 ├── balance_wheel.py          # Main bot engine
 ├── auth_manager.py           # Angel One authentication
 ├── config.json               # Configuration & stock list
-├── requirements.txt          # Python dependencies
+├── smartapi_client.py        # Official SDK import wrapper
+├── requirements-runtime.txt  # Production dependencies
+├── requirements.txt          # Full dev dependencies
 ├── README.md                 # This file
 ├── logs/
 │   └── balance_wheel.log     # Rotating log file (10 days)
@@ -633,7 +631,7 @@ This bot is provided as-is for educational and trading purposes. Use at your own
 
 **Disclaimer:** BalanceWheel is an automated trading tool. While it implements multiple safety mechanisms, **no algorithm can guarantee profits or prevent losses**. Past performance is not indicative of future results. Always understand your risk tolerance and investment goals before using automated trading systems.
 
-**Last Updated:** May 30, 2026  
+**Last Updated:** June 4, 2026  
 **Maintained By:** Senior Python Developer & FinTech Engineer
 
 ---
@@ -645,8 +643,10 @@ This repository includes a dedicated `docs/` folder with authoritative reference
 - Project documentation: [docs/PROJECT_DOCUMENTATION.md](docs/PROJECT_DOCUMENTATION.md)
 - Verification & go-live: [docs/VERIFICATION.md](docs/VERIFICATION.md)
 - Trading diary (orders & run history): [docs/TRADING_DIARY.md](docs/TRADING_DIARY.md)
+- GCP VM bootstrap: [docs/GCP_VM_BOOTSTRAP.md](docs/GCP_VM_BOOTSTRAP.md)
 - Changelog: [docs/CHANGELOG.md](docs/CHANGELOG.md)
-- Docs maintenance guide: [docs/DOCS_MAINTENANCE.md](docs/DOCS_MAINTENANCE.md)
+- Docs maintenance: [docs/DOCS_MAINTENANCE.md](docs/DOCS_MAINTENANCE.md)
+- Target watchlist: [docs/TARGET_STOCKS.md](docs/TARGET_STOCKS.md)
 
 CI & PR checks
 - The repository includes a Pull Request template and a lightweight GitHub Action that runs on PRs to help ensure the changelog or documentation is updated when core files change. See `.github/` for details.

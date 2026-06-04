@@ -5,7 +5,11 @@ All notable changes to this project should be documented in this file. Follow Se
 ## [Unreleased]
 
 ### Added
-- [docs/TRADING_DIARY.md](TRADING_DIARY.md) — chronological record of bot runs and verified orders (linked from README).
+- [docs/TRADING_DIARY.md](TRADING_DIARY.md) — chronological record of bot runs and verified orders.
+- [docs/GCP_VM_BOOTSTRAP.md](GCP_VM_BOOTSTRAP.md) — GCP Ubuntu bootstrap commands (no crontab).
+
+### Changed
+- Documentation overhaul (2026-06-04): aligned README, QUICKSTART, DEPLOYMENT, PROJECT_SUMMARY, VERIFICATION, PROJECT_DOCUMENTATION, LOGGING, REPO_METADATA with v1.0.9 (portfolio mode, live default, `requirements-runtime.txt`, `--account`, order_settings, cooldown default 0).
 
 ## [1.0.9] - 2026-05-30
 

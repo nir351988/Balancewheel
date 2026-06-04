@@ -1,274 +1,120 @@
 # BalanceWheel Quick Start Guide
 
-## 5-Minute Setup
+**Version:** 1.0.9 | **~5 minutes** to first `--account` check
 
-### Prerequisites
+## Prerequisites
+
 - Python 3.9+
-- Angel One account with SmartAPI enabled
-- API credentials (Key, Client Code, Password, TOTP)
+- Angel One SmartAPI + [TOTP](https://smartapi.angelbroking.com/enable-totp)
+- API key, client code, trading PIN, TOTP secret
 
-### Step 1: Clone & Setup (1 min)
+## Step 1: Clone & venv (1 min)
+
 ```bash
-cd ~/projects
-git clone <your-repo-url> BalanceWheel
+git clone https://github.com/nir351988/Balancewheel.git BalanceWheel
 cd BalanceWheel
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate   # Windows: venv\Scripts\activate
 ```
 
-### Step 2: Install Dependencies (2 min)
+## Step 2: Install (2 min)
+
 ```bash
-pip install -r requirements.txt
-pip show smartapi-python   # must be >= 1.5.5 (TOTP login)
+pip install -r requirements-runtime.txt
+pip show smartapi-python   # >= 1.5.5
 ```
 
-### Step 3: Configure Credentials (1 min)
+## Step 3: Configure (1 min)
+
 ```bash
 cp .env.example .env
-# Edit .env with your Angel One credentials:
-# ANGEL_API_KEY=your_key
-# ANGEL_CLIENT_CODE=your_code
-# ANGEL_PASSWORD=your_trading_pin
-# ANGEL_TOTP=your_totp_secret   # from enable-totp page
-# Leave DRY_RUN unset for production (default)
-nano .env
+# Edit: ANGEL_API_KEY, ANGEL_CLIENT_CODE, ANGEL_PASSWORD, ANGEL_TOTP_SECRET
+# Leave DRY_RUN unset for production
 ```
 
-### Step 4: Verify auth, then run (1 min)
+## Step 4: Verify & run (1 min)
+
 ```bash
 python dev_tools.py --test auth
-python balance_wheel.py   # LIVE by default — places real orders when BUY fires
+python balance_wheel.py --account    # DMAT snapshot, no orders
+python -m pytest tests/ -q           # 20 offline tests
+
+# Full cycle — LIVE by default
+python balance_wheel.py
 ```
 
-Optional dry-run test:
+Dry-run test only:
+
 ```bash
 DRY_RUN=true python balance_wheel.py
 ```
 
-Expected output:
+Expected live startup line:
+
 ```
-BalanceWheel Bot Initialized
-Authentication successful
-[BUY] TCS: Price dip 16.50%...
-[DRY RUN] Would place order: TCS x150 @ 3400
+LIVE PRODUCTION MODE — real BUY orders will be sent to Angel One when signals fire
 ```
 
-### Step 5: Production scheduling
-```bash
-# Default is live. Confirm .env does NOT have DRY_RUN=true
-grep -E "DRY_RUN|PAPER" .env || true
-python balance_wheel.py
+Portfolio mode log:
+
+```
+Portfolio mode: analyzing demat holdings only
 ```
 
 ---
 
-## Verification Checklist
+## Verification checklist
 
-- [ ] All dependencies installed: `pip list`
-- [ ] Config file properly formatted: `python -c "import json; json.load(open('config.json'))"`
-- [ ] Credentials working: Dry-run mode runs successfully
-- [ ] Logs being created: `ls -la logs/`
-- [ ] Database initialized: `sqlite3 data/balance_wheel.db ".tables"`
-- [ ] All 13 stocks in target list
-- [ ] Dry-run tested with at least 1 cycle
-- [ ] Ready for live trading
+- [ ] `requirements-runtime.txt` installed; SmartAPI >= 1.5.5
+- [ ] `python balance_wheel.py --account` shows cash + holdings
+- [ ] `pytest tests/` — 20 passed
+- [ ] `config.json`: `analyze_holdings_only: true` (default)
+- [ ] Dry-run tested before first live market day
+- [ ] `cooldown_days` set if you want buy spacing (default **0**)
 
 ---
 
-## Running on PythonAnywhere
+## PythonAnywhere
 
-### Deploy Steps
+```bash
+mkvirtualenv --python=/usr/bin/python3.10 balance_wheel
+workon balance_wheel
+pip install -r requirements-runtime.txt
+```
 
-1. **Upload Files to PythonAnywhere Web Console**
-   ```
-   /home/yourusername/BalanceWheel/
-   ```
+Scheduled task (example — once daily in market hours):
 
-2. **Create Virtual Environment**
-   ```
-   mkvirtualenv --python=/usr/bin/python3.10 balance_wheel
-   pip install -r requirements.txt
-   ```
+```
+/home/USER/.virtualenvs/balance_wheel/bin/python /home/USER/BalanceWheel/balance_wheel.py
+```
 
-3. **Create Scheduled Task**
-   - Go to: PythonAnywhere > Tasks
-   - Add task:
-     ```
-     /home/yourusername/.virtualenvs/balance_wheel/bin/python \
-     /home/yourusername/BalanceWheel/balance_wheel.py
-     ```
-   - Schedule: Daily @ 09:15 (before market opens at 9:30)
-   - Or: Every 15 minutes during market hours
-
-4. **Monitor Logs**
-   ```
-   tail -f /home/yourusername/BalanceWheel/logs/balance_wheel.log
-   ```
+Avoid Python **3.11** on PA if `_posixsubprocess` is missing. See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ---
 
-## Common First Steps
+## GCP Ubuntu
 
-### 1. Check Authentication
+See [docs/GCP_VM_BOOTSTRAP.md](docs/GCP_VM_BOOTSTRAP.md). Schedule runs from your infra repo (not installed by bootstrap).
+
+---
+
+## Useful commands
+
 ```bash
-python -c "
-from balance_wheel import BalanceWheelBot
-bot = BalanceWheelBot()
-success, msg = bot.auth_manager.authenticate()
-print(f'Auth: {success} - {msg}')
-"
-```
-
-### 2. Fetch Stock Prices
-```bash
-python -c "
-from balance_wheel import BalanceWheelBot
-bot = BalanceWheelBot()
-bot.startup()
-ltp = bot.market_data_manager.get_ltp('TCS')
-print(f'TCS LTP: {ltp}')
-"
-```
-
-### 3. Inspect Database
-```bash
-# View all observations
-sqlite3 data/balance_wheel.db "SELECT * FROM observations LIMIT 10;"
-
-# View all trades
-sqlite3 data/balance_wheel.db "SELECT * FROM executed_trades LIMIT 10;"
-
-# Count by action
-sqlite3 data/balance_wheel.db \
-  "SELECT action, COUNT(*) FROM observations GROUP BY action;"
-```
-
-### 4. Check Recent Logs
-```bash
-# Last 20 lines
-tail -20 logs/balance_wheel.log
-
-# Filter by log level
-grep ERROR logs/balance_wheel.log
-grep -i "buy\|alert" logs/balance_wheel.log
+tail -30 logs/balance_wheel.log
+grep -E "Placing LIVE|Order placed|DRY RUN|Execution blocked" logs/balance_wheel.log
+sqlite3 data/balance_wheel.db "SELECT * FROM executed_trades ORDER BY id DESC LIMIT 5;"
 ```
 
 ---
 
-## Troubleshooting First Issues
+## Docs
 
-### "ModuleNotFoundError: No module named 'SmartApi'"
-```bash
-# Reinstall requirements
-pip install --upgrade -r requirements.txt
-```
+| Doc | Use |
+|-----|-----|
+| [README.md](README.md) | Full guide |
+| [docs/VERIFICATION.md](docs/VERIFICATION.md) | Go-live checks |
+| [docs/TRADING_DIARY.md](docs/TRADING_DIARY.md) | Order history |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Hosting |
 
-### "Connection refused" or "Timeout"
-```bash
-# Check internet connection
-ping google.com
-
-# Try auth manually
-python -c "from auth_manager import AngelOneAuthManager; \
-auth = AngelOneAuthManager('KEY', 'CODE', 'PASS'); \
-success, msg = auth.authenticate(); print(msg)"
-```
-
-### "Invalid credentials"
-```bash
-# Verify in Angel One website first
-# Then re-check .env file
-# Ensure no extra spaces:
-cat .env | grep ANGEL
-```
-
-### No trades executing
-```bash
-# 1. Check if dry_run is enabled
-grep dry_run config.json
-
-# 2. Check if any BUY signals in logs
-grep "\[BUY\]" logs/balance_wheel.log
-
-# 3. Run single cycle in verbose mode
-python -c "
-import logging
-logging.basicConfig(level=logging.DEBUG)
-from balance_wheel import BalanceWheelBot
-bot = BalanceWheelBot()
-bot.startup()
-bot.run_cycle()
-"
-```
-
----
-
-## Development
-
-### Running Tests
-```bash
-pytest tests/ -v
-pytest tests/test_engine.py::TestBalanceWheelEngine::test_analyze_stock_buy_signal -v
-```
-
-### Code Quality
-```bash
-# Format code
-black balance_wheel.py auth_manager.py
-
-# Check lint
-flake8 balance_wheel.py auth_manager.py
-
-# Type checking
-mypy balance_wheel.py
-```
-
-### Manual Testing
-```bash
-# Enter Python REPL
-python
-
-# Then in REPL:
-from balance_wheel import *
-config = json.load(open('config.json'))
-bot = BalanceWheelBot()
-bot.startup()
-
-# Test analysis
-stock = config['target_stocks'][0]
-analysis = bot.engine.analyze_stock(stock, ltp=3400, portfolio_avg_price=4000)
-print(analysis)
-```
-
----
-
-## Next Steps
-
-1. **Customize Stock List**
-   - Edit `config.json` `target_stocks` array
-   - Add/remove stocks based on your portfolio
-
-2. **Adjust Rules**
-   - Modify thresholds in `trading_rules`
-   - Test different dip percentages in dry-run
-
-3. **Monitor Daily**
-   - Set phone alerts for errors
-   - Review logs for patterns
-
-4. **Optimize Scheduling**
-   - Start with single daily run
-   - Expand to multiple runs if comfortable
-
----
-
-## Support
-
-- **Logs:** `logs/balance_wheel.log`
-- **Database:** `data/balance_wheel.db`
-- **Config:** `config.json`
-- **Documentation:** `README.md`
-
----
-
-**Happy Trading! Remember: Always test in dry-run first! 🚀**
+**Always test with `DRY_RUN=true` before your first live market run.**

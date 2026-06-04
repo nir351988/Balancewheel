@@ -1,5 +1,7 @@
 # BalanceWheel: Deployment Complete with Centralized Logging
 
+> **Note (2026-06-04):** For current setup, defaults (v1.0.9, live mode, portfolio-first), and hosting, use [README.md](README.md), [DEPLOYMENT.md](DEPLOYMENT.md), and [docs/VERIFICATION.md](docs/VERIFICATION.md). This file is a historical completion log from May 2026.
+
 ## Summary of Completed Tasks
 
 ### ✅ 1. GitHub Repository Setup

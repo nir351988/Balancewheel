@@ -1,6 +1,8 @@
 # BalanceWheel Enhancements & Professional Strategy Recommendations
 
-This document captures the latest architecture and strategy improvements for BalanceWheel, along with recommended enhancements for higher reliability and better NSE performance.
+**Current release:** 1.0.9 — portfolio-first mode (`analyze_holdings_only: true`), live default, LIMIT DELIVERY orders. See [docs/PROJECT_DOCUMENTATION.md](docs/PROJECT_DOCUMENTATION.md) and [docs/TRADING_DIARY.md](docs/TRADING_DIARY.md).
+
+This document captures architecture and strategy improvements, plus recommendations for higher reliability and NSE performance.
 
 ## 1. Current Strategy Behavior
 
