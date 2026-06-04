@@ -372,3 +372,68 @@
 2026-05-30 03:46:50 UTC - BalanceWheel - INFO - [shutdown:1333] - ================================================================================
 2026-05-30 03:46:50 UTC - BalanceWheel - INFO - [_push_logs_to_github:1321] - Git command successful: git config
 2026-05-30 03:46:50 UTC - BalanceWheel - INFO - [_push_logs_to_github:1321] - Git command successful: git config
+2026-06-04 10:31:36 IST - BalanceWheel - INFO - [__init__:978] - ================================================================================
+2026-06-04 10:31:36 IST - BalanceWheel - INFO - [__init__:979] - BalanceWheel Bot Initialized - BalanceWheel v1.0.9
+2026-06-04 10:31:36 IST - BalanceWheel - WARNING - [__init__:983] - LIVE PRODUCTION MODE — real BUY orders will be sent to Angel One when signals fire
+2026-06-04 10:31:36 IST - BalanceWheel - INFO - [__init__:988] - Repository configured from env: https://github.com/nir351988/Balancewheel.git
+2026-06-04 10:31:36 IST - BalanceWheel - INFO - [__init__:990] - GitHub token loaded from environment (hidden)
+2026-06-04 10:31:36 IST - BalanceWheel - INFO - [__init__:991] - ================================================================================
+2026-06-04 10:31:36 IST - BalanceWheel - INFO - [startup:1084] - Starting up BalanceWheel bot...
+2026-06-04 10:31:36 IST - BalanceWheel - INFO - [startup:1091] - Authentication successful: Fresh authentication successful
+2026-06-04 10:31:36 IST - BalanceWheel - INFO - [_init_db:151] - Database initialized: data/balance_wheel.db
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [get_all_holdings:335] - Loaded 3 portfolio holding(s) from demat
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1135] - ================================================================================
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1136] - DMAT ACCOUNT SNAPSHOT (Angel One)
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1137] - ================================================================================
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1138] - Client: FF***
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1139] - Mode: LIVE PRODUCTION
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1143] - Available cash / margin (INR): 8,577.61 [rmsLimit.availablecash]
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1147] - Holdings: 3 position(s), market value (INR): 13,978.35
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1151] - Total DMAT estimate (cash + holdings) (INR): 22,555.96
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1154] - --------------------------------------------------------------------------------
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1155] - Symbol            Qty        Avg       LTP*        Value
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1157] - BAJAJFINSV          1    2110.90    1732.90      1732.90
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1157] - HCLTECH             6    1497.26    1167.60      7005.60
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1157] - HDFCBANK            7     933.53     748.55      5239.85
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1161] - * LTP from holdings API (last price; may be close when market is shut)
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1164] - Angel One account API: OK (auth + data)
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [log_dmat_account_summary:1168] - ================================================================================
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [startup:1115] - Bot startup completed successfully!
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [run_cycle:1224] - --------------------------------------------------------------------------------
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [run_cycle:1225] - Starting trading cycle at 2026-06-04 10:31:37.122430
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [run_cycle:1230] - Portfolio mode: analyzing demat holdings only (watchlist has 13 names for sector/metadata reference)
+2026-06-04 10:31:37 IST - BalanceWheel - ERROR - [run_cycle:1277] - Trading cycle failed: Couldn't parse the JSON response received from the server: b'Access denied because of exceeding access rate'
+Traceback (most recent call last):
+  File "/opt/balancewheel-venv/lib/python3.10/site-packages/SmartApi/smartConnect.py", line 230, in _request
+    data = json.loads(r.content.decode("utf8"))
+  File "/usr/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/usr/lib/python3.10/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/balancewheel/balance_wheel.py", line 1237, in run_cycle
+    for stock, position in self._iter_cycle_stocks():
+  File "/opt/balancewheel/balance_wheel.py", line 1203, in _iter_cycle_stocks
+    for holding in self.market_data_manager.get_all_holdings():
+  File "/opt/balancewheel/balance_wheel.py", line 311, in get_all_holdings
+    for holding in self._fetch_holdings_list():
+  File "/opt/balancewheel/balance_wheel.py", line 287, in _fetch_holdings_list
+    holdings = self.smartapi.holding()
+  File "/opt/balancewheel-venv/lib/python3.10/site-packages/SmartApi/smartConnect.py", line 399, in holding
+    holdingResponse= self._getRequest("api.holding")
+  File "/opt/balancewheel-venv/lib/python3.10/site-packages/SmartApi/smartConnect.py", line 266, in _getRequest
+    return self._request(route, "GET", params)
+  File "/opt/balancewheel-venv/lib/python3.10/site-packages/SmartApi/smartConnect.py", line 233, in _request
+    raise ex.DataException("Couldn't parse the JSON response received from the server: {content}".format(
+SmartApi.smartExceptions.DataException: Couldn't parse the JSON response received from the server: b'Access denied because of exceeding access rate'
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [shutdown:1332] - ================================================================================
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [shutdown:1333] - BalanceWheel Bot shutting down: Trading cycle completed
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [shutdown:1334] - ================================================================================
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [_push_logs_to_github:1322] - Git command successful: git config
+2026-06-04 10:31:37 IST - BalanceWheel - INFO - [_push_logs_to_github:1322] - Git command successful: git config
