@@ -67,3 +67,8 @@ Thumbs.db
 *.key
 *.pem
 secrets.json
+
+# GCP VM deploy env
+!app/
+!app/.env
+
