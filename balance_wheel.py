@@ -1223,7 +1223,9 @@ class BalanceWheelBot:
         try:
             self.logger.info("-" * 80)
             self.logger.info(f"Starting trading cycle at {datetime.now()}")
-            self.market_data_manager.clear_holdings_cache()
+            # Re-fetch holdings only when configured (avoids duplicate Angel API call right after startup).
+            if self.config.get("refresh_holdings_each_cycle", False):
+                self.market_data_manager.clear_holdings_cache()
 
             if self.config.get("analyze_holdings_only", True):
                 watchlist_count = len(self.config.get("target_stocks", []))
