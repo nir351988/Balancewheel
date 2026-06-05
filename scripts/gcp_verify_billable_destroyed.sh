@@ -5,8 +5,8 @@
 #   ./scripts/gcp_verify_billable_destroyed.sh \
 #     --project my-project \
 #     --region asia-south1 \
-#     --static-ip-name balancewheel-static-ip \
-#     --secret-id balancewheel-dotenv \
+#     --static-ip-name my-static-ip \
+#     --secret-id swingbot-balancewheel-env \
 #     [--name-prefix balancewheel]
 #
 # Requires: gcloud CLI authenticated with permission to list compute + secrets.
@@ -16,9 +16,9 @@ set -euo pipefail
 
 PROJECT=""
 REGION=""
-STATIC_IP_NAME=""
-SECRET_ID=""
-NAME_PREFIX="balancewheel"
+STATIC_IP_NAME="${STATIC_IP_NAME:-my-static-ip}"
+SECRET_ID="${SECRET_ID:-swingbot-balancewheel-env}"
+NAME_PREFIX="${NAME_PREFIX:-balancewheel}"
 
 log() { echo "[verify] $*"; }
 fail() { echo "[verify] FAIL: $*" >&2; FAILED=1; }
@@ -52,6 +52,7 @@ if ! command -v gcloud &>/dev/null; then
   exit 1
 fi
 
+export CLOUDSDK_CORE_DISABLE_PROMPTS=1
 gcloud config set project "$PROJECT" --quiet 2>/dev/null || true
 
 filter_name() {
