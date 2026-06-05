@@ -644,6 +644,7 @@ This repository includes a dedicated `docs/` folder with authoritative reference
 - Verification & go-live: [docs/VERIFICATION.md](docs/VERIFICATION.md)
 - Trading diary (orders & run history): [docs/TRADING_DIARY.md](docs/TRADING_DIARY.md)
 - GCP VM bootstrap: [docs/GCP_VM_BOOTSTRAP.md](docs/GCP_VM_BOOTSTRAP.md)
+- GCP teardown (keep secrets + static IP): [docs/GCP_TEARDOWN.md](docs/GCP_TEARDOWN.md)
 - Changelog: [docs/CHANGELOG.md](docs/CHANGELOG.md)
 - Docs maintenance: [docs/DOCS_MAINTENANCE.md](docs/DOCS_MAINTENANCE.md)
 - Target watchlist: [docs/TARGET_STOCKS.md](docs/TARGET_STOCKS.md)

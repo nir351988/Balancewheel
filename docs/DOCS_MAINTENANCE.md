@@ -22,7 +22,8 @@ Update relevant files whenever you change:
 | [docs/CHANGELOG.md](CHANGELOG.md) | Version history |
 | [docs/TARGET_STOCKS.md](TARGET_STOCKS.md) | Watchlist rationale |
 | [docs/TRADING_DIARY.md](TRADING_DIARY.md) | Order/run diary |
-| [docs/GCP_VM_BOOTSTRAP.md](GCP_VM_BOOTSTRAP.md) | GCP VM commands |
+| [docs/GCP_VM_BOOTSTRAP.md](GCP_VM_BOOTSTRAP.md) | GCP VM create/bootstrap |
+| [docs/GCP_TEARDOWN.md](GCP_TEARDOWN.md) | GCP destroy + billing verification |
 
 ## Workflow
 

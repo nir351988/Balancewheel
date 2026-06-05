@@ -5,6 +5,9 @@ All notable changes to this project should be documented in this file. Follow Se
 ## [Unreleased]
 
 ### Added
+- [docs/GCP_TEARDOWN.md](GCP_TEARDOWN.md) and `scripts/gcp_verify_billable_destroyed.sh` — destroy billable GCP resources while keeping Secret Manager + static IP.
+
+### Added (prior)
 - [docs/TRADING_DIARY.md](TRADING_DIARY.md) — chronological record of bot runs and verified orders.
 - [docs/GCP_VM_BOOTSTRAP.md](GCP_VM_BOOTSTRAP.md) — GCP Ubuntu bootstrap commands (no crontab).
 

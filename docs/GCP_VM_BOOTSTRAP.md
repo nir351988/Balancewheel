@@ -54,8 +54,18 @@ cd /opt/balancewheel && /opt/balancewheel/venv/bin/python balance_wheel.py
 
 Reserve a GCP static external IP, attach to the VM, register it in the Angel One SmartAPI portal.
 
+## Teardown (end of day)
+
+Destroy **VM, disks, and other billable compute** — **keep** Secret Manager secrets and the **static IP**. See [GCP_TEARDOWN.md](GCP_TEARDOWN.md) and run:
+
+```bash
+./scripts/gcp_verify_billable_destroyed.sh --project ID --region REGION \
+  --static-ip-name balancewheel-static-ip --secret-id balancewheel-dotenv
+```
+
 ## Related
 
+- [GCP_TEARDOWN.md](GCP_TEARDOWN.md) — destroy + verify billable resources
 - [DEPLOYMENT.md](../DEPLOYMENT.md#gcp-ubuntu--linux-vps)
 - [VERIFICATION.md](VERIFICATION.md)
 - [TRADING_DIARY.md](TRADING_DIARY.md)

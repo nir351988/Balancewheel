@@ -16,6 +16,7 @@ Technical reference for architecture, configuration, deployment, logging, and ma
 | [TRADING_DIARY.md](TRADING_DIARY.md) | Verified orders and run history |
 | [TARGET_STOCKS.md](TARGET_STOCKS.md) | Watchlist rationale |
 | [GCP_VM_BOOTSTRAP.md](GCP_VM_BOOTSTRAP.md) | GCP Ubuntu VM provisioning (no crontab) |
+| [GCP_TEARDOWN.md](GCP_TEARDOWN.md) | Destroy billable GCP resources; keep secrets + static IP |
 | [CHANGELOG.md](CHANGELOG.md) | Release notes |
 | [DOCS_MAINTENANCE.md](DOCS_MAINTENANCE.md) | How to keep docs in sync |
 

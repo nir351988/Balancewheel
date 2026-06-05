@@ -223,6 +223,13 @@ Set VM timezone: `sudo timedatectl set-timezone Asia/Kolkata`.
 
 See [docs/TRADING_DIARY.md](docs/TRADING_DIARY.md) for log-verified orders.
 
+### Teardown (keep secrets + static IP)
+
+After market hours, destroy **only billable** resources (VM, disks, snapshots). **Do not delete** Secret Manager secrets or the reserved static IP (Angel One registration).
+
+- Guide: [docs/GCP_TEARDOWN.md](docs/GCP_TEARDOWN.md)
+- Verify: `scripts/gcp_verify_billable_destroyed.sh`
+
 ---
 
 ## AWS Lambda Deployment
